@@ -340,6 +340,14 @@ static int flv_set_video_codec(AVFormatContext *s, AVStream *vstream,
         par->codec_id = AV_CODEC_ID_MPEG4;
         ret = 3;
         break;
+    case FLV_CODECID_LHE:
+        par->codec_id = AV_CODEC_ID_LHE;
+        par->codec_tag = FLV_CODECID_LHE;
+        break;
+    case FLV_CODECID_MLHE:
+        par->codec_id = AV_CODEC_ID_MLHE;
+        par->codec_tag = FLV_CODECID_MLHE;
+        break;
     default:
         avpriv_request_sample(s, "Video codec (%x)", flv_codecid);
         par->codec_tag = flv_codecid;

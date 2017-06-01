@@ -45,8 +45,7 @@ typedef struct LheState {
     uint8_t quality_level;
     uint32_t total_blocks_width;
     uint32_t total_blocks_height;
-    int dif_frames_count;
-    int global_frames_count;
+    uint64_t global_frames_count;
 } LheState;
 
 
@@ -60,7 +59,6 @@ static av_cold int lhe_decode_init(AVCodecContext *avctx)
     
     lhe_init_cache(&s->prec);
     
-    s->dif_frames_count = 0;
     s->global_frames_count = 0;
     
     return 0;
@@ -1483,9 +1481,7 @@ static int mlhe_decode_video(AVCodecContext *avctx, void *data, int *got_frame, 
     
     s->lhe_mode = get_bits(&s->gb, LHE_MODE_SIZE_BITS);  
      
-    if (s->lhe_mode == DELTA_MLHE && s->global_frames_count>0) { /*DELTA VIDEO FRAME*/
-        s->dif_frames_count++;
-                
+    if (s->lhe_mode == DELTA_MLHE && s->global_frames_count>0) { /*DELTA VIDEO FRAME*/                
         image_size_Y = (&s->procY)->width * (&s->procY)->height;
         image_size_UV = (&s->procUV)->width * (&s->procUV)->height; 
         
@@ -1536,7 +1532,6 @@ static int mlhe_decode_video(AVCodecContext *avctx, void *data, int *got_frame, 
     } 
     else if (s->lhe_mode == ADVANCED_LHE)
     {    
-        s->dif_frames_count=0;
         s->global_frames_count++;
         
         //Pixel format byte, init pixel format
