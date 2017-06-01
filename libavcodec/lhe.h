@@ -145,6 +145,9 @@ static const uint8_t mlhe_sig[4] = "MLHE";
 #define PPP_MAX_IMAGES 200 //this value allows to compress images up to 12800 px widthwise
 #define MAX_QL 100
 
+//STREAMING
+#define GOP 5
+
 typedef struct LheBasicPrec {
     uint8_t prec_luminance[Y_MAX_COMPONENT][RATIO][H1_RANGE][NUMBER_OF_HOPS]; // precomputed luminance component
     uint8_t best_hop [RATIO][H1_RANGE][Y_MAX_COMPONENT][Y_MAX_COMPONENT]; //ratio - h1 - original color - prediction

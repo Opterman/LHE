@@ -1472,16 +1472,12 @@ static int mlhe_decode_video(AVCodecContext *avctx, void *data, int *got_frame, 
     
     const uint8_t *lhe_data = avpkt->data;
     
-    //Pointers to different color components
-    (&s->lheY)->component_prediction = s->frame->data[0];
-    (&s->lheU)->component_prediction = s->frame->data[1];
-    (&s->lheV)->component_prediction = s->frame->data[2];
-    
     init_get_bits(&s->gb, lhe_data, avpkt->size * 8);
     
     s->lhe_mode = get_bits(&s->gb, LHE_MODE_SIZE_BITS);  
      
-    if (s->lhe_mode == DELTA_MLHE && s->global_frames_count>0) { /*DELTA VIDEO FRAME*/                
+    if (s->lhe_mode == DELTA_MLHE && s->global_frames_count>0) { /*DELTA VIDEO FRAME*/      
+        
         image_size_Y = (&s->procY)->width * (&s->procY)->height;
         image_size_UV = (&s->procUV)->width * (&s->procUV)->height; 
         
@@ -1489,6 +1485,10 @@ static int mlhe_decode_video(AVCodecContext *avctx, void *data, int *got_frame, 
         av_frame_unref(s->frame);
         if ((ret = ff_get_buffer(avctx, s->frame, 0)) < 0)
             return ret;
+        
+        (&s->lheY)->component_prediction = s->frame->data[0];
+        (&s->lheU)->component_prediction  = s->frame->data[1];
+        (&s->lheV)->component_prediction  = s->frame->data[2];
     
         s->total_blocks_width = HORIZONTAL_BLOCKS;
         pixels_block = (&s->procY)->width / HORIZONTAL_BLOCKS;
@@ -1531,7 +1531,7 @@ static int mlhe_decode_video(AVCodecContext *avctx, void *data, int *got_frame, 
         mlhe_decode_delta_frame (s, he_Y, he_UV, image_size_Y, image_size_UV);
     } 
     else if (s->lhe_mode == ADVANCED_LHE)
-    {    
+    {   
         s->global_frames_count++;
         
         //Pixel format byte, init pixel format
@@ -1554,6 +1554,11 @@ static int mlhe_decode_video(AVCodecContext *avctx, void *data, int *got_frame, 
         av_frame_unref(s->frame);
         if ((ret = ff_get_buffer(avctx, s->frame, 0)) < 0)
             return ret;
+        
+        //Pointers to different color components
+        (&s->lheY)->component_prediction = s->frame->data[0];
+        (&s->lheU)->component_prediction  = s->frame->data[1];
+        (&s->lheV)->component_prediction  = s->frame->data[2];
 
         s->total_blocks_width = HORIZONTAL_BLOCKS;
         pixels_block = (&s->procY)->width / HORIZONTAL_BLOCKS;
@@ -1582,12 +1587,6 @@ static int mlhe_decode_video(AVCodecContext *avctx, void *data, int *got_frame, 
         {
             (&s->lheV)->first_color_block[i] = get_bits(&s->gb, FIRST_COLOR_SIZE_BITS); 
         }
-
-        //Pointers to different color components
-        (&s->lheY)->component_prediction = s->frame->data[0];
-        (&s->lheU)->component_prediction  = s->frame->data[1];
-        (&s->lheV)->component_prediction  = s->frame->data[2];
-        
         
         (&s->lheY)->hops = av_calloc(image_size_Y, sizeof(uint8_t));      
         (&s->lheU)->hops = av_calloc(image_size_UV, sizeof(uint8_t));    
@@ -1662,7 +1661,7 @@ static int mlhe_decode_video(AVCodecContext *avctx, void *data, int *got_frame, 
                 
         lhe_advanced_decode_symbols (s, he_Y, he_UV, image_size_Y, image_size_UV);
     }   
- 
+
     if (!(&s->procY)->last_advanced_block) 
     {
          (&s->procY)->last_advanced_block = av_calloc(s->total_blocks_height, sizeof(AdvancedLheBlock *));

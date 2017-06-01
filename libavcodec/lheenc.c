@@ -90,10 +90,9 @@ static av_cold int lhe_encode_init(AVCodecContext *avctx)
         s->chroma_factor_height = 1;
     }
         
-    s->dif_frames_count = 30;
+    s->dif_frames_count = GOP;
     
     return 0;
-
 }
 
 
@@ -2853,7 +2852,7 @@ static int mlhe_encode_video(AVCodecContext *avctx, AVPacket *pkt,
     (&s->lheV)->first_color_block = av_calloc(total_blocks , sizeof(uint8_t));
          
     /* 5 frames P, 1 frame I*/
-    if ((&s->lheY)->last_downsampled_image && s->dif_frames_count<5) 
+    if ((&s->lheY)->last_downsampled_image && s->dif_frames_count<GOP) 
     {
         s->dif_frames_count++;
         
@@ -2970,6 +2969,7 @@ static int mlhe_encode_video(AVCodecContext *avctx, AVPacket *pkt,
         memcpy ((&s->lheU)->last_downsampled_image, (&s->lheU)->component_prediction, image_size_UV);
         memcpy ((&s->lheV)->last_downsampled_image, (&s->lheV)->component_prediction, image_size_UV);
     }
+    
 
     if(avctx->flags&AV_CODEC_FLAG_PSNR){
         lhe_compute_error_for_psnr (avctx, frame, component_original_data_Y, component_original_data_U, component_original_data_V); 
