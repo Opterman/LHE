@@ -40,6 +40,7 @@ static const uint8_t mlhe_sig[4] = "MLHE";
 #define SEQUENTIAL_BASIC_LHE 0
 #define PARAREL_BASIC_LHE 1
 #define ADVANCED_LHE 2
+#define DELTA_MLHE 3
 #define MIDDLE_VALUE false
 #define LUMINANCE_FACTOR 1
 #define BLOCK_WIDTH_Y 64
@@ -135,13 +136,14 @@ static const uint8_t mlhe_sig[4] = "MLHE";
 #define PR_MESH_BITS 2*PR_INTERVAL_BITS
 
 //Compression
+#define LHE_MODE_SIZE_BITS 8
+#define PIXEL_FMT_SIZE_BITS 8
+#define FIRST_COLOR_SIZE_BITS 8
+#define WIDTH_SIZE_BITS 32
+#define HEIGHT_SIZE_BITS 32
 #define QL_SIZE_BITS 8
 #define PPP_MAX_IMAGES 200 //this value allows to compress images up to 12800 px widthwise
 #define MAX_QL 100
-
-//Offset file
-#define FILE_OFFSET_BYTES 4//800
-#define FILE_OFFSET_BITS FILE_OFFSET_BYTES*8
 
 typedef struct LheBasicPrec {
     uint8_t prec_luminance[Y_MAX_COMPONENT][RATIO][H1_RANGE][NUMBER_OF_HOPS]; // precomputed luminance component

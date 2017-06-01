@@ -104,7 +104,7 @@ static const AVCodecDescriptor codec_descriptors[] = {
         .name      = "mlhe",
         .long_name = NULL_IF_CONFIG_SMALL("Motion LHE"),
         .props     = AV_CODEC_PROP_INTRA_ONLY | AV_CODEC_PROP_LOSSY,
-        .mime_types= MT("image/lhe"),
+        .mime_types= MT("video/mlhe"),
     },
     {
         .id        = AV_CODEC_ID_MPEG4,
