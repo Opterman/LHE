@@ -109,8 +109,8 @@ enum {
     FLV_CODECID_H264    = 7,
     FLV_CODECID_REALH263= 8,
     FLV_CODECID_MPEG4   = 9,
-    FLV_CODECID_LHE   = 10,
-    FLV_CODECID_MLHE   = 11,
+    FLV_CODECID_LHE     = 10,
+    FLV_CODECID_MLHE    = 11,
 };
 
 enum {
