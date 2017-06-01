@@ -146,7 +146,7 @@ static const uint8_t mlhe_sig[4] = "MLHE";
 #define MAX_QL 100
 
 //STREAMING
-#define GOP 5
+#define GOP 30
 
 typedef struct LheBasicPrec {
     uint8_t prec_luminance[Y_MAX_COMPONENT][RATIO][H1_RANGE][NUMBER_OF_HOPS]; // precomputed luminance component

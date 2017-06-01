@@ -2851,7 +2851,7 @@ static int mlhe_encode_video(AVCodecContext *avctx, AVPacket *pkt,
     (&s->lheU)->first_color_block = av_calloc(total_blocks , sizeof(uint8_t));
     (&s->lheV)->first_color_block = av_calloc(total_blocks , sizeof(uint8_t));
          
-    /* 5 frames P, 1 frame I*/
+    /* GOP frames P, 1 frame I*/
     if ((&s->lheY)->last_downsampled_image && s->dif_frames_count<GOP) 
     {
         s->dif_frames_count++;
