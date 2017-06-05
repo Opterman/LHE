@@ -66,11 +66,39 @@ typedef struct LheContext {
 } LheContext;
 
 /**
- * Initializes coder
+ * Initializes image coder
  * 
  * @param *avctx Pointer to AVCodec context
  */
 static av_cold int lhe_encode_init(AVCodecContext *avctx)
+{
+    LheContext *s = avctx->priv_data;
+
+    lhe_init_cache(&s->prec);
+        
+    if (avctx->pix_fmt == AV_PIX_FMT_YUV420P)
+    {
+        s->chroma_factor_width = 2;
+        s->chroma_factor_height = 2;
+    } else if (avctx->pix_fmt == AV_PIX_FMT_YUV422P) 
+    {
+        s->chroma_factor_width = 2;
+        s->chroma_factor_height = 1;
+    } else if (avctx->pix_fmt == AV_PIX_FMT_YUV444P) 
+    {
+        s->chroma_factor_width = 1;
+        s->chroma_factor_height = 1;
+    }
+            
+    return 0;
+}
+
+/**
+ * Initializes video coder
+ * 
+ * @param *avctx Pointer to AVCodec context
+ */
+static av_cold int mlhe_encode_init(AVCodecContext *avctx)
 {
     LheContext *s = avctx->priv_data;
 
@@ -2777,27 +2805,6 @@ static int lhe_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
 //==================================================================
 // ENCODE VIDEO
 //==================================================================
-
-/**
- * Free pointers
- * 
- * @param *s Pointers
- * @param total_blocks_width 
- * @param total_blocks_height 
- */
-static void mlhe_free(LheContext *s, uint32_t total_blocks_width, uint32_t total_blocks_height) 
-{    
-    av_free((&s->lheY)->component_prediction); 
-    av_free((&s->lheU)->component_prediction); 
-    av_free((&s->lheV)->component_prediction); 
-    av_free((&s->lheY)->hops); 
-    av_free((&s->lheU)->hops); 
-    av_free((&s->lheV)->hops); 
-    av_free((&s->lheY)->first_color_block);
-    av_free((&s->lheU)->first_color_block); 
-    av_free((&s->lheV)->first_color_block);
-}
-
 /**
  * Video encode method
  * 
@@ -2833,43 +2840,53 @@ static int mlhe_encode_video(AVCodecContext *avctx, AVPacket *pkt,
     (&s->procY)->theoretical_block_height = (&s->procY)->height / total_blocks_height;       
 
     (&s->procUV)->theoretical_block_width = (&s->procUV)->width / total_blocks_width;
-    (&s->procUV)->theoretical_block_height = (&s->procUV)->height / total_blocks_height;
-    
+    (&s->procUV)->theoretical_block_height = (&s->procUV)->height / total_blocks_height;   
     
     //Pointers to different color components
     component_original_data_Y = frame->data[0];
     component_original_data_U = frame->data[1];
     component_original_data_V = frame->data[2];
     
-    (&s->lheY)->component_prediction = av_calloc(image_size_Y , sizeof(uint8_t));  
-    (&s->lheU)->component_prediction = av_calloc(image_size_UV , sizeof(uint8_t));
-    (&s->lheV)->component_prediction = av_calloc(image_size_UV , sizeof(uint8_t)); 
-    (&s->lheY)->hops = av_calloc(image_size_Y , sizeof(uint8_t));
-    (&s->lheU)->hops = av_calloc(image_size_UV , sizeof(uint8_t));
-    (&s->lheV)->hops = av_calloc(image_size_UV , sizeof(uint8_t));
-    (&s->lheY)->first_color_block = av_calloc(total_blocks , sizeof(uint8_t));
-    (&s->lheU)->first_color_block = av_calloc(total_blocks , sizeof(uint8_t));
-    (&s->lheV)->first_color_block = av_calloc(total_blocks , sizeof(uint8_t));
+    if (!(&s->lheY)->component_prediction)
+        (&s->lheY)->component_prediction = av_calloc(image_size_Y , sizeof(uint8_t));  
+    
+    if (!(&s->lheU)->component_prediction)
+        (&s->lheU)->component_prediction = av_calloc(image_size_UV , sizeof(uint8_t));
+    
+    if (!(&s->lheV)->component_prediction)
+        (&s->lheV)->component_prediction = av_calloc(image_size_UV , sizeof(uint8_t));
+    
+    if (!(&s->lheY)->hops)
+        (&s->lheY)->hops = av_calloc(image_size_Y , sizeof(uint8_t));
+    
+    if (!(&s->lheU)->hops)
+        (&s->lheU)->hops = av_calloc(image_size_UV , sizeof(uint8_t));
+    
+    if (!(&s->lheV)->hops)
+        (&s->lheV)->hops = av_calloc(image_size_UV , sizeof(uint8_t));
+    
+    if (!(&s->lheY)->first_color_block)
+        (&s->lheY)->first_color_block = av_calloc(total_blocks , sizeof(uint8_t));
+    
+    if (!(&s->lheU)->first_color_block)
+        (&s->lheU)->first_color_block = av_calloc(total_blocks , sizeof(uint8_t));
+    
+    if (!(&s->lheV)->first_color_block)
+        (&s->lheV)->first_color_block = av_calloc(total_blocks , sizeof(uint8_t));
          
     /* GOP frames P, 1 frame I*/
-    if ((&s->lheY)->last_downsampled_image && s->dif_frames_count<GOP) 
+    if ((&s->lheY)->last_downsampled_image && s->dif_frames_count<GOP) /*DELTA FRAMES */ 
     {
         s->dif_frames_count++;
         
         if (!(&s->lheY)->downsampled_error_image)
-        {
             (&s->lheY)->downsampled_error_image = av_calloc(image_size_Y, sizeof(uint8_t)); 
-        }
         
         if (!(&s->lheU)->downsampled_error_image)
-        {
             (&s->lheU)->downsampled_error_image = av_calloc(image_size_Y, sizeof(uint8_t)); 
-        }
         
         if (!(&s->lheV)->downsampled_error_image)
-        {
             (&s->lheV)->downsampled_error_image = av_calloc(image_size_Y, sizeof(uint8_t)); 
-        }
         
         mlhe_delta_frame_encode (s, frame,
                                  component_original_data_Y, component_original_data_U, component_original_data_V,
@@ -2878,20 +2895,18 @@ static int mlhe_encode_video(AVCodecContext *avctx, AVPacket *pkt,
         mlhe_advanced_write_delta_frame(avctx, pkt, 
                                         total_blocks_width, total_blocks_height); 
         
+        /*Copying information from last frame*/
         memcpy ((&s->lheY)->last_downsampled_image, (&s->lheY)->downsampled_error_image, image_size_Y);    
         memcpy ((&s->lheU)->last_downsampled_image, (&s->lheU)->downsampled_error_image, image_size_UV);
         memcpy ((&s->lheV)->last_downsampled_image, (&s->lheV)->downsampled_error_image, image_size_UV);
         
-        memset((&s->lheY)->downsampled_error_image, 0, image_size_Y);
-        memset((&s->lheU)->downsampled_error_image, 0, image_size_UV);
-        memset((&s->lheV)->downsampled_error_image, 0, image_size_UV);
-        
-        //av_free ((&s->lheY)->downsampled_error_image);
-        //av_free ((&s->lheU)->downsampled_error_image);
-        //av_free ((&s->lheV)->downsampled_error_image);
-
+        for (int i=0; i < total_blocks_height; i++)
+        {
+            memcpy((&s->procY)->last_advanced_block[i], (&s->procY)->advanced_block[i], sizeof(AdvancedLheBlock) * (total_blocks_width));
+            memcpy((&s->procUV)->last_advanced_block[i], (&s->procUV)->advanced_block[i], sizeof(AdvancedLheBlock) * (total_blocks_width));
+        } 
     }      
-    else 
+    else /*INTRA FRAMES */ 
     {
         /*Init dif frames count*/
         s->dif_frames_count = 0;
@@ -2899,49 +2914,44 @@ static int mlhe_encode_video(AVCodecContext *avctx, AVPacket *pkt,
         (&s->procY)->basic_block = av_calloc(total_blocks_height, sizeof(BasicLheBlock *));
         
         for (int i=0; i < total_blocks_height; i++)
-        {
             (&s->procY)->basic_block[i] = av_calloc (total_blocks_width, sizeof(BasicLheBlock));  
-        }
+        
         
         (&s->procUV)->basic_block = av_calloc (total_blocks_height, sizeof(BasicLheBlock *));
         
-        for (int i=0; i < total_blocks_height; i++)
-        {
+        for (int i=0; i < total_blocks_height; i++)     
             (&s->procUV)->basic_block[i] = av_calloc (total_blocks_width, sizeof(BasicLheBlock));
-        }
+        
 
         (&s->procY)->perceptual_relevance_x = av_calloc((total_blocks_height+1), sizeof(float*));  
     
         for (int i=0; i<total_blocks_height+1; i++) 
-        {
             (&s->procY)->perceptual_relevance_x[i] = av_calloc((total_blocks_width+1), sizeof(float));
-        }
-        
+     
         (&s->procY)->perceptual_relevance_y = av_calloc((total_blocks_height+1), sizeof(float*)); 
         
         for (int i=0; i<total_blocks_height+1; i++) 
-        {
             (&s->procY)->perceptual_relevance_y[i] = av_calloc((total_blocks_width+1), sizeof(float));
-        }   
-    
+
         //Advanced blocks
         (&s->procY)->advanced_block = av_calloc (total_blocks_height, sizeof(AdvancedLheBlock *));
         
         for (int i=0; i < total_blocks_height; i++)
-        {
             (&s->procY)->advanced_block[i] = av_calloc (total_blocks_width, sizeof(AdvancedLheBlock));
-        }
-        
+ 
         (&s->procUV)->advanced_block = av_calloc (total_blocks_height, sizeof(AdvancedLheBlock *));
         
         for (int i=0; i < total_blocks_height; i++)
-        {
             (&s->procUV)->advanced_block[i] = av_calloc (total_blocks_width, sizeof(AdvancedLheBlock));
-        }
         
-        (&s->lheY)->downsampled_image = av_calloc (image_size_Y, sizeof(uint8_t));
-        (&s->lheU)->downsampled_image = av_calloc (image_size_UV, sizeof(uint8_t));
-        (&s->lheV)->downsampled_image = av_calloc (image_size_UV, sizeof(uint8_t));
+        if (!(&s->lheY)->downsampled_image)
+            (&s->lheY)->downsampled_image = av_calloc (image_size_Y, sizeof(uint8_t));
+        
+        if (!(&s->lheU)->downsampled_image)
+            (&s->lheU)->downsampled_image = av_calloc (image_size_UV, sizeof(uint8_t));
+        
+        if (!(&s->lheV)->downsampled_image)
+            (&s->lheV)->downsampled_image = av_calloc (image_size_UV, sizeof(uint8_t));
        
         lhe_advanced_encode (s, frame, component_original_data_Y, component_original_data_U, component_original_data_V,
                              total_blocks_width, total_blocks_height);     
@@ -2950,24 +2960,41 @@ static int mlhe_encode_video(AVCodecContext *avctx, AVPacket *pkt,
                                 image_size_Y, image_size_UV, 
                                 total_blocks_width, total_blocks_height);   
         
+        /*Creating arrays for delta frames*/
         if (!(&s->lheY)->last_downsampled_image)
-        {
             (&s->lheY)->last_downsampled_image = av_calloc(image_size_Y, sizeof(uint8_t));  
-        }
         
         if(!(&s->lheU)->last_downsampled_image) 
-        {
             (&s->lheU)->last_downsampled_image = av_calloc(image_size_UV, sizeof(uint8_t)); 
-        }
             
         if(!(&s->lheV)->last_downsampled_image) 
-        {
             (&s->lheV)->last_downsampled_image = av_calloc(image_size_UV, sizeof(uint8_t));  
+        
+        if (!(&s->procY)->last_advanced_block) 
+        {
+            (&s->procY)->last_advanced_block = av_calloc(total_blocks_height, sizeof(AdvancedLheBlock *));
+        
+            for (int i=0; i < total_blocks_height; i++)
+                (&s->procY)->last_advanced_block[i] = av_calloc (total_blocks_width, sizeof(AdvancedLheBlock));    
+        }
+    
+        if (!(&s->procUV)->last_advanced_block) {
+            (&s->procUV)->last_advanced_block = av_calloc(total_blocks_height, sizeof(AdvancedLheBlock *));
+        
+            for (int i=0; i < total_blocks_height; i++)
+                (&s->procUV)->last_advanced_block[i] = av_calloc (total_blocks_width, sizeof(AdvancedLheBlock));
         }
         
+        /*Copying information from last frame*/
         memcpy ((&s->lheY)->last_downsampled_image, (&s->lheY)->component_prediction, image_size_Y);    
         memcpy ((&s->lheU)->last_downsampled_image, (&s->lheU)->component_prediction, image_size_UV);
         memcpy ((&s->lheV)->last_downsampled_image, (&s->lheV)->component_prediction, image_size_UV);
+        
+        for (int i=0; i < total_blocks_height; i++)
+        {
+            memcpy((&s->procY)->last_advanced_block[i], (&s->procY)->advanced_block[i], sizeof(AdvancedLheBlock) * (total_blocks_width));
+            memcpy((&s->procUV)->last_advanced_block[i], (&s->procUV)->advanced_block[i], sizeof(AdvancedLheBlock) * (total_blocks_width));
+        } 
     }
     
 
@@ -2979,44 +3006,8 @@ static int mlhe_encode_video(AVCodecContext *avctx, AVPacket *pkt,
     {
         print_csv_pr_metrics(&s->procY, total_blocks_width, total_blocks_height);  
     }
-    
-    
-    
-    if (!(&s->procY)->last_advanced_block) 
-    {
-         (&s->procY)->last_advanced_block = av_calloc(total_blocks_height, sizeof(AdvancedLheBlock *));
-        
-        for (int i=0; i < total_blocks_height; i++)
-        {
-            (&s->procY)->last_advanced_block[i] = av_calloc (total_blocks_width, sizeof(AdvancedLheBlock));
-        }      
-    }
-    
-    if (!(&s->procUV)->last_advanced_block) {
-        (&s->procUV)->last_advanced_block = av_calloc(total_blocks_height, sizeof(AdvancedLheBlock *));
-        
-        for (int i=0; i < total_blocks_height; i++)
-        {
-            (&s->procUV)->last_advanced_block[i] = av_calloc (total_blocks_width, sizeof(AdvancedLheBlock));
-        }
-    }
-
-
- 
-    for (int i=0; i < total_blocks_height; i++)
-    {
-        memcpy((&s->procY)->last_advanced_block[i], (&s->procY)->advanced_block[i], sizeof(AdvancedLheBlock) * (total_blocks_width));
-        memcpy((&s->procUV)->last_advanced_block[i], (&s->procUV)->advanced_block[i], sizeof(AdvancedLheBlock) * (total_blocks_width));
-    }    
    
-    memset((&s->lheY)->downsampled_image, 0, image_size_Y);
-    memset((&s->lheU)->downsampled_image, 0, image_size_UV);
-    memset((&s->lheV)->downsampled_image, 0, image_size_UV);
-    
-    mlhe_free(s, total_blocks_width, total_blocks_height);
-    
-    
-    
+
     pkt->flags |= AV_PKT_FLAG_KEY;
     *got_packet = 1;
 
@@ -3033,6 +3024,32 @@ static int lhe_encode_close(AVCodecContext *avctx)
 
     return 0;
 
+}
+
+static int mlhe_encode_close(AVCodecContext *avctx)
+{
+    LheContext *s = avctx->priv_data;
+
+    av_free((&s->lheY)->component_prediction); 
+    av_free((&s->lheU)->component_prediction); 
+    av_free((&s->lheV)->component_prediction); 
+    av_free((&s->lheY)->hops); 
+    av_free((&s->lheU)->hops); 
+    av_free((&s->lheV)->hops); 
+    av_free((&s->lheY)->first_color_block);
+    av_free((&s->lheU)->first_color_block); 
+    av_free((&s->lheV)->first_color_block);
+    av_free((&s->lheY)->last_downsampled_image);
+    av_free((&s->lheU)->last_downsampled_image); 
+    av_free((&s->lheV)->last_downsampled_image);
+    av_free((&s->lheY)->downsampled_image);
+    av_free((&s->lheU)->downsampled_image); 
+    av_free((&s->lheV)->downsampled_image);
+    av_free((&s->lheY)->downsampled_error_image);
+    av_free((&s->lheU)->downsampled_error_image); 
+    av_free((&s->lheV)->downsampled_error_image);
+    
+    return 0;
 }
 
 #define OFFSET(x) offsetof(LheContext, x)
@@ -3079,9 +3096,9 @@ AVCodec ff_mlhe_encoder = {
     .type           = AVMEDIA_TYPE_VIDEO,
     .id             = AV_CODEC_ID_MLHE,
     .priv_data_size = sizeof(LheContext),
-    .init           = lhe_encode_init,
+    .init           = mlhe_encode_init,
     .encode2        = mlhe_encode_video,
-    .close          = lhe_encode_close,
+    .close          = mlhe_encode_close,
     .pix_fmts       = (const enum AVPixelFormat[]){
         AV_PIX_FMT_YUV420P, 
         AV_PIX_FMT_YUV422P, 
