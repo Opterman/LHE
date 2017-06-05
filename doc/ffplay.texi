@@ -12,7 +12,7 @@
 
 @chapter Synopsis
 
-ffplay [@var{options}] [@file{input_url}]
+ffplay [@var{options}] [@file{input_file}]
 
 @chapter Description
 @c man begin DESCRIPTION
@@ -62,12 +62,6 @@ see @ref{time duration syntax,,the Time duration section in the ffmpeg-utils(1) 
 Seek by bytes.
 @item -nodisp
 Disable graphical display.
-@item -noborder
-Borderless window.
-@item -volume
-Set the startup volume. 0 means silence, 100 means no volume reduction or
-amplification. Negative values are treated as 0, values above 100 are treated
-as 100.
 @item -f @var{fmt}
 Force format.
 @item -window_title @var{title}
@@ -112,8 +106,8 @@ the input audio.
 Use the option "-filters" to show all the available filters (including
 sources and sinks).
 
-@item -i @var{input_url}
-Read @var{input_url}.
+@item -i @var{input_file}
+Read @var{input_file}.
 @end table
 
 @section Advanced options

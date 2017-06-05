@@ -72,12 +72,7 @@ static int open_input_file(const char *filename)
         return ret;
     }
     video_stream_index = ret;
-
-    /* create decoding context */
-    dec_ctx = avcodec_alloc_context3(dec);
-    if (!dec_ctx)
-        return AVERROR(ENOMEM);
-    avcodec_parameters_to_context(dec_ctx, fmt_ctx->streams[video_stream_index]->codecpar);
+    dec_ctx = fmt_ctx->streams[video_stream_index]->codec;
     av_opt_set_int(dec_ctx, "refcounted_frames", 1, 0);
 
     /* init the video decoder */
@@ -213,6 +208,7 @@ int main(int argc, char **argv)
     AVPacket packet;
     AVFrame *frame = av_frame_alloc();
     AVFrame *filt_frame = av_frame_alloc();
+    int got_frame;
 
     if (!frame || !filt_frame) {
         perror("Could not allocate frame");
@@ -237,49 +233,40 @@ int main(int argc, char **argv)
             break;
 
         if (packet.stream_index == video_stream_index) {
-            ret = avcodec_send_packet(dec_ctx, &packet);
+            got_frame = 0;
+            ret = avcodec_decode_video2(dec_ctx, frame, &got_frame, &packet);
             if (ret < 0) {
-                av_log(NULL, AV_LOG_ERROR, "Error while sending a packet to the decoder\n");
+                av_log(NULL, AV_LOG_ERROR, "Error decoding video\n");
                 break;
             }
 
-            while (ret >= 0) {
-                ret = avcodec_receive_frame(dec_ctx, frame);
-                if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+            if (got_frame) {
+                frame->pts = av_frame_get_best_effort_timestamp(frame);
+
+                /* push the decoded frame into the filtergraph */
+                if (av_buffersrc_add_frame_flags(buffersrc_ctx, frame, AV_BUFFERSRC_FLAG_KEEP_REF) < 0) {
+                    av_log(NULL, AV_LOG_ERROR, "Error while feeding the filtergraph\n");
                     break;
-                } else if (ret < 0) {
-                    av_log(NULL, AV_LOG_ERROR, "Error while receiving a frame from the decoder\n");
-                    goto end;
                 }
 
-                if (ret >= 0) {
-                    frame->pts = frame->best_effort_timestamp;
-
-                    /* push the decoded frame into the filtergraph */
-                    if (av_buffersrc_add_frame_flags(buffersrc_ctx, frame, AV_BUFFERSRC_FLAG_KEEP_REF) < 0) {
-                        av_log(NULL, AV_LOG_ERROR, "Error while feeding the filtergraph\n");
+                /* pull filtered frames from the filtergraph */
+                while (1) {
+                    ret = av_buffersink_get_frame(buffersink_ctx, filt_frame);
+                    if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
                         break;
-                    }
-
-                    /* pull filtered frames from the filtergraph */
-                    while (1) {
-                        ret = av_buffersink_get_frame(buffersink_ctx, filt_frame);
-                        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
-                            break;
-                        if (ret < 0)
-                            goto end;
-                        display_frame(filt_frame, buffersink_ctx->inputs[0]->time_base);
-                        av_frame_unref(filt_frame);
-                    }
-                    av_frame_unref(frame);
+                    if (ret < 0)
+                        goto end;
+                    display_frame(filt_frame, buffersink_ctx->inputs[0]->time_base);
+                    av_frame_unref(filt_frame);
                 }
+                av_frame_unref(frame);
             }
         }
         av_packet_unref(&packet);
     }
 end:
     avfilter_graph_free(&filter_graph);
-    avcodec_free_context(&dec_ctx);
+    avcodec_close(dec_ctx);
     avformat_close_input(&fmt_ctx);
     av_frame_free(&frame);
     av_frame_free(&filt_frame);
