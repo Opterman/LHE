@@ -1474,9 +1474,12 @@ static int mlhe_decode_video(AVCodecContext *avctx, void *data, int *got_frame, 
     
     init_get_bits(&s->gb, lhe_data, avpkt->size * 8);
     
-    s->lhe_mode = get_bits(&s->gb, LHE_MODE_SIZE_BITS);  
-     
-    if (s->lhe_mode == DELTA_MLHE && s->global_frames_count>0) { /*DELTA VIDEO FRAME*/      
+    s->lhe_mode = get_bits(&s->gb, LHE_MODE_SIZE_BITS); 
+        
+    if (s->lhe_mode==DELTA_MLHE && s->global_frames_count<=0) 
+      return -1;
+         
+    if (s->lhe_mode == DELTA_MLHE) { /*DELTA VIDEO FRAME*/      
         
         image_size_Y = (&s->procY)->width * (&s->procY)->height;
         image_size_UV = (&s->procUV)->width * (&s->procUV)->height; 
@@ -1680,7 +1683,6 @@ static int mlhe_decode_video(AVCodecContext *avctx, void *data, int *got_frame, 
             (&s->procUV)->last_advanced_block[i] = av_calloc (s->total_blocks_width, sizeof(AdvancedLheBlock));
         }
     }
-
     
     if (!(&s->lheY)->last_downsampled_image) {
         (&s->lheY)->last_downsampled_image = av_calloc(image_size_Y, sizeof(uint8_t));  
@@ -1696,7 +1698,7 @@ static int mlhe_decode_video(AVCodecContext *avctx, void *data, int *got_frame, 
         (&s->lheV)->last_downsampled_image = av_calloc(image_size_UV, sizeof(uint8_t));  
     }
     
-     for (int i=0; i < s->total_blocks_height; i++)
+    for (int i=0; i < s->total_blocks_height; i++)
     {
         memcpy((&s->procY)->last_advanced_block[i], (&s->procY)->advanced_block[i], sizeof(AdvancedLheBlock) * (s->total_blocks_width));
         memcpy((&s->procUV)->last_advanced_block[i], (&s->procUV)->advanced_block[i], sizeof(AdvancedLheBlock) * (s->total_blocks_width));
@@ -1708,10 +1710,9 @@ static int mlhe_decode_video(AVCodecContext *avctx, void *data, int *got_frame, 
     
     memset((&s->lheY)->downsampled_image, 0, image_size_Y);
     memset((&s->lheU)->downsampled_image, 0, image_size_UV);
-    memset((&s->lheV)->downsampled_image, 0, image_size_UV);  
+    memset((&s->lheV)->downsampled_image, 0, image_size_UV);     
     
-       
-    if ((ret = av_frame_ref(data, s->frame)) < 0)
+    if ((ret = av_frame_ref(data, s->frame)) < 0) 
         return ret;
  
     *got_frame = 1;
