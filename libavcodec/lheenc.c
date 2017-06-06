@@ -298,7 +298,7 @@ static uint64_t lhe_basic_gen_huffman_rlc (LheHuffEntry *he_Y, LheHuffEntry *he_
                                        uint8_t *symbols_Y, uint8_t *symbols_U, uint8_t *symbols_V,
                                        int image_size_Y, int image_size_UV)
 {
-    int i, ret, ret2, n_bits;
+    int i, ret, n_bits;
     float bpp;
     uint8_t  huffman_lengths_Y[LHE_MAX_HUFF_SIZE_SYMBOLS];
     uint8_t  huffman_lengths_UV[LHE_MAX_HUFF_SIZE_SYMBOLS];
@@ -778,13 +778,13 @@ static int lhe_basic_write_file(AVCodecContext *avctx, AVPacket *pkt,
     
     // RLC calc Y
     
-    av_log (NULL, AV_LOG_INFO, "\n Y; \n");
-    av_log(NULL, AV_LOG_INFO,"\n;");
+//     av_log (NULL, AV_LOG_INFO, "\n Y; \n");
+//     av_log(NULL, AV_LOG_INFO,"\n;");
     
     for (i=0; i<image_size_Y; i++)
     {
         
-        av_log (NULL, AV_LOG_INFO, "%d;", lheY->hops[i]);
+//         av_log (NULL, AV_LOG_INFO, "%d;", lheY->hops[i]);
         
         //If HOP_0
         if ( ( lheY->hops[i] ) == HOP_0 )
@@ -891,15 +891,13 @@ static int lhe_basic_write_file(AVCodecContext *avctx, AVPacket *pkt,
     
     // RLC calc U
  
-    av_log (NULL, AV_LOG_INFO, "\n U; \n");
-    
-    av_log(NULL, AV_LOG_INFO,"\n");
-    av_log(NULL, AV_LOG_INFO," ;");
+//     av_log (NULL, AV_LOG_INFO, "\n U; \n");
+//     av_log(NULL, AV_LOG_INFO,"\n;");
 
     for (i=0; i<image_size_UV; i++)
     {
 
-        av_log (NULL, AV_LOG_INFO, "%d;", lheU->hops[i]);
+//         av_log (NULL, AV_LOG_INFO, "%d;", lheU->hops[i]);
 
         //If HOP_0
         if ( ( lheU->hops[i] ) == HOP_0 )
@@ -992,7 +990,11 @@ static int lhe_basic_write_file(AVCodecContext *avctx, AVPacket *pkt,
     }
         
     
-//     // Normal V
+    
+    
+    
+    
+    // Normal V
 // //     int n_v = 0;
 //     for (i=0; i<image_size_UV; i++)
 //     {
@@ -1001,20 +1003,18 @@ static int lhe_basic_write_file(AVCodecContext *avctx, AVPacket *pkt,
 //     }
 // //     av_log(NULL, AV_LOG_INFO, "\n\n n_v TOTAL: %d \n\n ", n_v);
 //     
-    
+//     
     
     
     // RLC calc V
  
-    av_log (NULL, AV_LOG_INFO, "\n V; \n");
- 
-    av_log(NULL, AV_LOG_INFO,"\n");
-    av_log(NULL, AV_LOG_INFO," ;");
+//     av_log (NULL, AV_LOG_INFO, "\n V; \n");
+//     av_log(NULL, AV_LOG_INFO,"\n;");
  
     for (i=0; i<image_size_UV; i++)
     {
         
-        av_log (NULL, AV_LOG_INFO, "%d;", lheV->hops[i]);
+//         av_log (NULL, AV_LOG_INFO, "%d;", lheV->hops[i]);
         
         //If HOP_0
         if ( ( lheV->hops[i] ) == HOP_0 )
@@ -1098,6 +1098,9 @@ static int lhe_basic_write_file(AVCodecContext *avctx, AVPacket *pkt,
             counter_bin = 0;
         }
     }
+    
+    
+    
     
     
     put_bits(&s->pb, FILE_OFFSET_BITS , 0);
