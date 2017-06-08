@@ -248,15 +248,18 @@ static uint8_t lhe_translate_huffman_into_interval (uint32_t huffman_symbol, Lhe
     
     contador = 0;
     
+    
 
     while (decoded_symbols<image_size)
     {      
         
-//         av_log(NULL, AV_LOG_INFO, "%d;\n", get_bits(&s->gb, 1));
+//         av_log(NULL, AV_LOG_INFO, "%d ", get_bits(&s->gb, 1));
 //         decoded_symbols++;
 //         if((decoded_symbols+1) % 100 == 0){
-//             av_log (NULL, AV_LOG_INFO, "\n");
+//             av_log (NULL, AV_LOG_INFO, "\n");    
 //         }
+        
+        
         huffman_symbol = (huffman_symbol<<1) | get_bits(&s->gb, 1);
         count_bits++;
         symbol = lhe_translate_huffman_into_symbol(huffman_symbol, he, count_bits);
@@ -270,7 +273,7 @@ static uint8_t lhe_translate_huffman_into_interval (uint32_t huffman_symbol, Lhe
                 contador = contador + 1;
 //                 av_log(NULL, AV_LOG_INFO,"%d;",symbol); if((contador+1) % 100 == 0){av_log(NULL, AV_LOG_INFO,"\n");}
                 decoded_symbols = decoded_symbols+1;
-                if(decoded_symbols == image_size){break;} /// <- Esto tengo que explicarlo pero es clave
+                if(decoded_symbols == image_size){break;}
                 huffman_symbol = 0;
                 int total = 0;
                 int number = get_bits(&s->gb, BIT_NUMBER);
@@ -294,6 +297,7 @@ static uint8_t lhe_translate_huffman_into_interval (uint32_t huffman_symbol, Lhe
 //                     av_log(NULL, AV_LOG_INFO,"%d;",symbol); if((contador+1) % 100 == 0){av_log(NULL, AV_LOG_INFO,"\n");}
                     decoded_symbols = decoded_symbols+1;
                 }
+                if(decoded_symbols == image_size){break;}
                 
                 mask = 2;
                 count_bits = 0;
@@ -314,6 +318,7 @@ static uint8_t lhe_translate_huffman_into_interval (uint32_t huffman_symbol, Lhe
                         count_bits = 0;
                         mask = 0;
                         symbol=0;
+                        if(decoded_symbols == image_size){break;}
                     }  
                     else
                     {
@@ -335,6 +340,7 @@ static uint8_t lhe_translate_huffman_into_interval (uint32_t huffman_symbol, Lhe
                     decoded_symbols = decoded_symbols+1;
                     huffman_symbol = 0;
                     count_bits = 0;
+                    if(decoded_symbols == image_size){break;}
                 }   
             }
         }
@@ -350,6 +356,7 @@ static uint8_t lhe_translate_huffman_into_interval (uint32_t huffman_symbol, Lhe
                 decoded_symbols = decoded_symbols+1;
                 huffman_symbol = 0;
                 count_bits = 0;
+                if(decoded_symbols == image_size){break;}
             }   
         }
     

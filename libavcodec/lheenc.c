@@ -483,13 +483,22 @@ static void con_rlc(int image_size, LheContext* s, LheHuffEntry* he_X, LheImage*
     count__ = 0;
     i = 0;
     
+//     av_log (NULL, AV_LOG_INFO, "\n2;   %d; %d;", he_X[HOP_NEG_2].code, he_X[HOP_NEG_2].len );
+//     av_log (NULL, AV_LOG_INFO, "\n3;   %d; %d;", he_X[HOP_NEG_1].code, he_X[HOP_NEG_1].len );
+//     av_log (NULL, AV_LOG_INFO, "\n4;   %d; %d;", he_X[HOP_0].code, he_X[HOP_0].len );
+//     av_log (NULL, AV_LOG_INFO, "\n5;   %d; %d;", he_X[HOP_POS_1].code, he_X[HOP_POS_1].len );
+//     av_log (NULL, AV_LOG_INFO, "\n6;   %d; %d;", he_X[HOP_POS_2].code, he_X[HOP_POS_2].len );
+//     av_log (NULL, AV_LOG_INFO, "\n\n\n;");
+//     av_log (NULL, AV_LOG_INFO, "\n\n\n");
+//     av_log (NULL, AV_LOG_INFO, "\n\n\n");
+    
     for (i=0; i<image_size; i++)
     {
         
 //         av_log (NULL, AV_LOG_INFO, "%d;", lheX->hops[i]);
 //         count__ = count__ + 1;
 //         if((count__+1) % 100 == 0){av_log (NULL, AV_LOG_INFO, "\n");}
-        
+
         //If HOP_0
         if ( ( lheX->hops[i] ) == HOP_0 )
         {

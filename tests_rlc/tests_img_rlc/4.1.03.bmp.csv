@@ -1,0 +1,55 @@
+ffmpeg version N-78049-gded4284 Copyright (c) 2000-2016 the FFmpeg developers
+  built with gcc 5.4.0 (Ubuntu 5.4.0-6ubuntu1~16.04.4) 20160609
+  configuration: --extra-cflags=-fopenmp --extra-ldflags=-fopenmp --enable-ffplay
+  libavutil      55. 28.100 / 55. 28.100
+  libavcodec     57. 50.100 / 57. 50.100
+  libavformat    57. 42.100 / 57. 42.100
+  libavdevice    57.  0.102 / 57.  0.102
+  libavfilter     6. 47.100 /  6. 47.100
+  libswscale      4.  1.100 /  4.  1.100
+  libswresample   2.  1.100 /  2.  1.100
+Input #0, bmp_pipe, from '4.1.03.bmp':
+  Duration: N/A, bitrate: N/A
+    Stream #0:0: Video: bmp, bgr24, 256x256, 25 tbr, 25 tbn, 25 tbc
+[image2 @ 0x1fe9a80] Using AVStream.codec to pass codec parameters to muxers is deprecated, use AVStream.codecpar instead.
+Output #0, image2, to '4.1.03.bmp.lhe':
+  Metadata:
+    encoder         : Lavf57.42.100
+    Stream #0:0: Video: lhe, yuv444p, 256x256, q=2-31, 200 kb/s, 25 fps, 25 tbn, 25 tbc
+    Metadata:
+      encoder         : Lavc57.50.100 lhe
+Stream mapping:
+  Stream #0:0 -> #0:0 (bmp (native) -> lhe (native))
+Press [q] to stop, [?] for help
+Y bpp: 2.139725 YUV bpp: 2.139725 YUV+Header bpp: 2.517944 
+ LHE WriteTime 1259  5583; CodingTime 5583 
+frame=    1 fps=0.0 q=-0.0 Lsize=N/A time=00:00:00.04 bitrate=N/A speed= 5.4x    
+video:20kB audio:0kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: unknown
+ffmpeg version N-78049-gded4284 Copyright (c) 2000-2016 the FFmpeg developers
+  built with gcc 5.4.0 (Ubuntu 5.4.0-6ubuntu1~16.04.4) 20160609
+  configuration: --extra-cflags=-fopenmp --extra-ldflags=-fopenmp --enable-ffplay
+  libavutil      55. 28.100 / 55. 28.100
+  libavcodec     57. 50.100 / 57. 50.100
+  libavformat    57. 42.100 / 57. 42.100
+  libavdevice    57.  0.102 / 57.  0.102
+  libavfilter     6. 47.100 /  6. 47.100
+  libswscale      4.  1.100 /  4.  1.100
+  libswresample   2.  1.100 /  2.  1.100
+DECODING...Width 256 Height 256 
+Input #0, image2, from '4.1.03.bmp.lhe':
+  Duration: 00:00:00.04, start: 0.000000, bitrate: 4125 kb/s
+    Stream #0:0: Video: lhe, yuv444p, 256x256, 25 tbr, 25 tbn, 25 tbc
+Codec AVOption basic_lhe (Basic LHE) specified for output file #0 (dec_4.1.03.bmp) has not been used for any stream. The most likely reason is either wrong type (e.g. a video option with no video streams) or that it is a private option of some encoder which was not actually used for any stream.
+[image2 @ 0x34702e0] Using AVStream.codec to pass codec parameters to muxers is deprecated, use AVStream.codecpar instead.
+Output #0, image2, to 'dec_4.1.03.bmp':
+  Metadata:
+    encoder         : Lavf57.42.100
+    Stream #0:0: Video: bmp, bgr24, 256x256, q=2-31, 200 kb/s, 25 fps, 25 tbn, 25 tbc
+    Metadata:
+      encoder         : Lavc57.50.100 bmp
+Stream mapping:
+  Stream #0:0 -> #0:0 (lhe (native) -> bmp (native))
+Press [q] to stop, [?] for help
+DECODING...Width 256 Height 256 
+frame=    1 fps=0.0 q=-0.0 Lsize=N/A time=00:00:00.04 bitrate=N/A speed=11.6x    
+video:192kB audio:0kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: unknown
