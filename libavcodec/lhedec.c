@@ -232,11 +232,7 @@ static uint8_t lhe_translate_huffman_into_interval (uint32_t huffman_symbol, Lhe
  }
 
  
- 
- 
- 
- 
- // AQUI2
+ // AQUI
  static void lhe_basic_read_file_symbols_lum (LheState *s, LheHuffEntry *he, uint32_t image_size, uint8_t *symbols)
  {
     uint8_t symbol, count_bits;
@@ -252,19 +248,16 @@ static uint8_t lhe_translate_huffman_into_interval (uint32_t huffman_symbol, Lhe
     
     contador = 0;
     
-    av_log(NULL, AV_LOG_INFO,"\n\n\n var:   %d %d %d %d %d %d %d %d \n\n\n", symbol, count_bits, huffman_symbol, decoded_symbols, aux_huffman_symbol, counter_hop_0, mask, contador);
-    
-//     av_log(NULL, AV_LOG_INFO,"\n\n\n Dimension \n\n\n");
-//     av_log(NULL, AV_LOG_INFO,"\n\n");
 
-    
     while (decoded_symbols<image_size)
     {      
         
 //         av_log(NULL, AV_LOG_INFO, "%d;\n", get_bits(&s->gb, 1));
 //         decoded_symbols++;
-//         
-        
+//         if((decoded_symbols+1) % 100 == 0){
+//             av_log (NULL, AV_LOG_INFO, "\n");
+//         }
+   
         huffman_symbol = (huffman_symbol<<1) | get_bits(&s->gb, 1);
         count_bits++;
         symbol = lhe_translate_huffman_into_symbol(huffman_symbol, he, count_bits);
@@ -278,9 +271,8 @@ static uint8_t lhe_translate_huffman_into_interval (uint32_t huffman_symbol, Lhe
                 count_bits = 0;
                 symbols[decoded_symbols] = HOP_0;
                 contador = contador + 1;
-                av_log(NULL, AV_LOG_INFO,"%d: %d;",decoded_symbols,symbol); if((contador+1) % 1000 == 0){av_log(NULL, AV_LOG_INFO,"\n");}
+//                 av_log(NULL, AV_LOG_INFO,"%d;",symbol); if((contador+1) % 100 == 0){av_log(NULL, AV_LOG_INFO,"\n");}
                 decoded_symbols = decoded_symbols+1;
-//                 if(decoded_symbols == image_size){break;}
                 huffman_symbol = 0;
                 int total = 0;
                 int number = get_bits(&s->gb, BIT_NUMBER);
@@ -301,10 +293,10 @@ static uint8_t lhe_translate_huffman_into_interval (uint32_t huffman_symbol, Lhe
                 {    
                     symbols[decoded_symbols] = HOP_0;
                     contador = contador + 1;
-                    av_log(NULL, AV_LOG_INFO,"%d: %d;",decoded_symbols,symbol); if((contador+1) % 1000 == 0){av_log(NULL, AV_LOG_INFO,"\n");}
+//                     av_log(NULL, AV_LOG_INFO,"%d;",symbol); if((contador+1) % 100 == 0){av_log(NULL, AV_LOG_INFO,"\n");}
                     decoded_symbols = decoded_symbols+1;
-//                     if(decoded_symbols == image_size){break;}
                 }
+                
                 mask = 2;
                 count_bits = 0;
                 while(mask != 0)
@@ -317,9 +309,8 @@ static uint8_t lhe_translate_huffman_into_interval (uint32_t huffman_symbol, Lhe
                     {      
                         symbols[decoded_symbols] = symbol;
                         contador = contador + 1;                 
-                        av_log(NULL, AV_LOG_INFO,"%d: %d;",decoded_symbols,symbol); if((contador+1) % 1000 == 0){av_log(NULL, AV_LOG_INFO,"\n");}
+//                         av_log(NULL, AV_LOG_INFO,"%d;",symbol); if((contador+1) % 100 == 0){av_log(NULL, AV_LOG_INFO,"\n");}
                         decoded_symbols = decoded_symbols+1;
-//                         if(decoded_symbols == image_size){break;}
                         huffman_symbol = 0;
                         aux_huffman_symbol = 0;
                         count_bits = 0;
@@ -331,6 +322,8 @@ static uint8_t lhe_translate_huffman_into_interval (uint32_t huffman_symbol, Lhe
                         mask = mask*2; 
                     }
                 }
+                
+                
                 counter_hop_0 = 0;
             }
             else
@@ -340,9 +333,8 @@ static uint8_t lhe_translate_huffman_into_interval (uint32_t huffman_symbol, Lhe
                 {      
                     symbols[decoded_symbols] = symbol;
                     contador = contador + 1;
-                    av_log(NULL, AV_LOG_INFO,"%d: %d;",decoded_symbols,symbol); if((contador+1) % 1000 == 0){av_log(NULL, AV_LOG_INFO,"\n");}
+//                     av_log(NULL, AV_LOG_INFO,"%d;",symbol); if((contador+1) % 100 == 0){av_log(NULL, AV_LOG_INFO,"\n");}
                     decoded_symbols = decoded_symbols+1;
-//                     if(decoded_symbols == image_size){break;}
                     huffman_symbol = 0;
                     count_bits = 0;
                 }   
@@ -356,9 +348,8 @@ static uint8_t lhe_translate_huffman_into_interval (uint32_t huffman_symbol, Lhe
             {      
                 symbols[decoded_symbols] = symbol;
                 contador = contador + 1;
-                av_log(NULL, AV_LOG_INFO,"%d: %d;",decoded_symbols,symbol); if((contador+1) % 1000 == 0){av_log(NULL, AV_LOG_INFO,"\n");}
+//                 av_log(NULL, AV_LOG_INFO,"%d;",symbol); if((contador+1) % 100 == 0){av_log(NULL, AV_LOG_INFO,"\n");}
                 decoded_symbols = decoded_symbols+1;
-//                 if(decoded_symbols == image_size){break;}
                 huffman_symbol = 0;
                 count_bits = 0;
             }   
@@ -368,10 +359,7 @@ static uint8_t lhe_translate_huffman_into_interval (uint32_t huffman_symbol, Lhe
     }
     return;
     
-    
-//     av_log(NULL, AV_LOG_INFO,"\n\n\n\n\n decoded_symbols: %d \n\n\n\n\n", decoded_symbols);
-//     av_log(NULL, AV_LOG_INFO,"\n\n\n\n\n image_size:      %d \n\n\n\n\n", image_size);
-    
+       
  }
 
 //==================================================================
@@ -1465,12 +1453,13 @@ static int lhe_decode_frame(AVCodecContext *avctx, void *data, int *got_frame, A
 //         lhe_basic_read_file_symbols(s, he_Y, image_size_Y, (&s->lheY)->hops);
         lhe_basic_read_file_symbols_lum(s, he_Y,  image_size_Y,  (&s->lheY)->hops);
         
+        
 //         lhe_basic_read_file_symbols(s, he_UV, image_size_UV, (&s->lheU)->hops);
         lhe_basic_read_file_symbols_lum(s, he_UV, image_size_UV, (&s->lheU)->hops);
         
 //         lhe_basic_read_file_symbols(s, he_UV, image_size_UV, (&s->lheV)->hops);
         lhe_basic_read_file_symbols_lum(s, he_UV, image_size_UV, (&s->lheV)->hops);
-
+        
         
         if (total_blocks > 1 && OPENMP_FLAGS == CONFIG_OPENMP)
         {
