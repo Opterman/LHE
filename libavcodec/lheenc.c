@@ -306,6 +306,8 @@ static uint64_t lhe_basic_gen_huffman (LheHuffEntry *he_Y, LheHuffEntry *he_UV,
     
     //av_log (NULL, AV_LOG_INFO, "YUV bpp: %f ", bpp );
     
+    av_log (NULL, AV_LOG_INFO, "he_Y[%d] \n", he_Y[HOP_0].code);
+    
     return n_bits;
     
 }
@@ -450,6 +452,8 @@ static int lhe_basic_write_file(AVCodecContext *avctx, AVPacket *pkt,
     {
         put_bits(&s->pb, he_UV[lheV->hops[i]].len , he_UV[lheV->hops[i]].code);
     }
+    
+    flush_put_bits(&s->pb);
         
     gettimeofday(&after , NULL);
 
