@@ -228,6 +228,278 @@ static void print_csv_pr_metrics (LheProcessing *procY, int total_blocks_width, 
 //==================================================================
 
 
+static int get_mask(uint32_t leng, LheHuffEntry* he_X){
+    
+    int mask = 0;
+    for (int ll=0; ll<leng; ll++)
+    {
+            if(ll==0)
+            {
+                int val = he_X[HOP_0].code;
+                for (int mm=0; mm<(leng-(ll+1)); mm++)
+                {
+                        val = val*2;
+                }
+                mask += val;
+            }
+            else
+            {
+                int val = !(he_X[HOP_0].code);
+                for (int mm=0; mm<(leng-(ll+1)); mm++)
+                {
+                        val = val*2;
+                }
+                mask += val;
+            }
+    }
+    return mask;
+}
+
+
+static int get_bits_for_rlc(int image_size, LheHuffEntry* he_X, uint8_t* symbols_X){
+    unsigned int counter_hop_0,hh,aux_n_bits,counter_bin, mask;
+    aux_n_bits = 0;    
+    counter_hop_0 = 0;
+    counter_bin = 0;
+    hh = 0;
+    for (hh=0; hh<image_size; hh++)
+    {
+        if ( ( symbols_X[hh] ) == HOP_0 )
+        {
+            counter_hop_0++;
+            if ( counter_hop_0 <= MAX_HOPS) 
+            {
+                aux_n_bits  = aux_n_bits + he_X[symbols_X[hh]].len ;
+            }
+            else
+            {
+                counter_bin = counter_bin + 1;
+                if (counter_bin == MAX_NUMBER)
+                {
+                    aux_n_bits  = aux_n_bits + BIT_NUMBER;
+                    counter_bin = 0;
+                    counter_hop_0 = MAX_HOPS;
+                }
+            }
+        }
+        else
+        {
+            if (counter_bin != 0)
+            {
+                aux_n_bits  = aux_n_bits + BIT_NUMBER;
+            }
+            else
+            {
+                if (counter_hop_0 == MAX_HOPS)
+                {
+                    aux_n_bits  = aux_n_bits + BIT_NUMBER; 
+                }
+            } 
+            uint32_t code =  he_X[ symbols_X[hh] ].code;
+            uint32_t leng =  he_X[ symbols_X[hh] ].len;
+//             mask = get_mask(leng, he_X);
+//             if (counter_bin != 0)
+//             {
+//                     aux_n_bits  = aux_n_bits + leng - 1; 
+//             }
+//             else{
+//                 if (counter_hop_0 == MAX_HOPS)
+//                 {
+//                     aux_n_bits  = aux_n_bits + leng - 1;
+//                 }
+//                 else
+//                 {
+                    aux_n_bits  = aux_n_bits + he_X[symbols_X[hh]].len;
+/*                }
+            }  */         
+            counter_hop_0 = 0;
+            counter_bin = 0;
+        }
+    }
+    
+    return aux_n_bits;
+    
+}
+
+
+static uint64_t lhe_basic_gen_huffman_rlc (LheHuffEntry *he_Y, LheHuffEntry *he_UV,
+                                       uint8_t *symbols_Y, uint8_t *symbols_U, uint8_t *symbols_V,
+                                       int image_size_Y, int image_size_UV)
+{
+    int i, ret, n_bits;
+    float bpp;
+    uint8_t  huffman_lengths_Y[LHE_MAX_HUFF_SIZE_SYMBOLS];
+    uint8_t  huffman_lengths_UV[LHE_MAX_HUFF_SIZE_SYMBOLS];
+    uint64_t symbol_count_Y[LHE_MAX_HUFF_SIZE_SYMBOLS]     = { 0 };
+    uint64_t symbol_count_UV[LHE_MAX_HUFF_SIZE_SYMBOLS]    = { 0 };
+
+    //LUMINANCE
+    //First compute luminance probabilities from model
+    for (i=0; i<image_size_Y; i++) {
+        symbol_count_Y[symbols_Y[i]]++; //Counts occurrences of different luminance symbols
+    }
+    //Generates Huffman length for luminance signal
+    if ((ret = ff_huff_gen_len_table(huffman_lengths_Y, symbol_count_Y, LHE_MAX_HUFF_SIZE_SYMBOLS, 1)) < 0)
+        return ret;
+    //Fills he_Y struct with data
+    for (i = 0; i < LHE_MAX_HUFF_SIZE_SYMBOLS; i++) {
+        he_Y[i].len = huffman_lengths_Y[i];
+        he_Y[i].count = symbol_count_Y[i];
+        he_Y[i].sym = i;
+        he_Y[i].code = 1024; //imposible code to initialize
+    }
+    //Generates luminance Huffman codes
+    lhe_generate_huffman_codes(he_Y, LHE_MAX_HUFF_SIZE_SYMBOLS);
+    
+    //CHROMINANCES (same Huffman table for both chrominances)
+
+    //First, compute chrominance probabilities.
+    for (i=0; i<image_size_UV; i++) {
+        symbol_count_UV[symbols_U[i]]++; //Counts occurrences of different chrominance U symbols
+    }
+
+    for (i=0; i<image_size_UV; i++) {
+        symbol_count_UV[symbols_V[i]]++; //Counts occurrences of different chrominance V symbols
+    }
+
+
+     //Generates Huffman length for chrominance signals
+    if ((ret = ff_huff_gen_len_table(huffman_lengths_UV, symbol_count_UV, LHE_MAX_HUFF_SIZE_SYMBOLS, 1)) < 0)
+        return ret;
+
+    //Fills he_UV data
+    for (i = 0; i < LHE_MAX_HUFF_SIZE_SYMBOLS; i++) {
+        he_UV[i].len = huffman_lengths_UV[i];
+        he_UV[i].count = symbol_count_UV[i];
+        he_UV[i].sym = i;
+        he_UV[i].code = 1024;
+    }
+    
+    lhe_generate_huffman_codes(he_UV, LHE_MAX_HUFF_SIZE_SYMBOLS);
+    
+    n_bits += get_bits_for_rlc(image_size_Y, he_Y, symbols_Y);    
+    n_bits += get_bits_for_rlc(image_size_UV, he_UV, symbols_U);
+    n_bits += get_bits_for_rlc(image_size_UV, he_UV, symbols_V);
+
+    bpp = 1.0*n_bits/image_size_Y;
+
+    av_log (NULL, AV_LOG_INFO, "Y bpp: %f ", bpp );
+
+    bpp = 1.0*n_bits/image_size_Y;
+
+    av_log (NULL, AV_LOG_INFO, "YUV bpp: %f ", bpp );
+
+    return n_bits;
+
+}
+
+
+
+static void sin_rlc(int image_size, LheContext* s, LheHuffEntry* he_X, LheImage* lheX) {
+    int i;
+    for (i=0; i<image_size; i++)
+    {
+       put_bits(&s->pb, he_X[lheX->hops[i]].len , he_X[lheX->hops[i]].code);
+    }
+    
+}
+
+
+static void con_rlc(int image_size, LheContext* s, LheHuffEntry* he_X, LheImage* lheX){
+    
+    int count__;
+    unsigned int counter_hop_0, counter_bin;
+    counter_hop_0 = 0;
+    counter_bin   = 0;
+    count__ = 0;
+    
+    for (int i=0; i<image_size; i++)
+    {    
+//         av_log (NULL, AV_LOG_INFO, "%d;", lheX->hops[i]);
+//         count__ = count__ + 1;
+//         if((count__+1) % 100 == 0){av_log (NULL, AV_LOG_INFO, "\n");}
+        //If HOP_0
+        if ( ( lheX->hops[i] ) == HOP_0 )
+        {
+            counter_hop_0++;
+            // Less than max_hops HOP_0
+            if ( counter_hop_0 <= MAX_HOPS) 
+            {
+                put_bits(&s->pb, he_X[HOP_0].len , he_X[HOP_0].code);
+            }
+            // More than 4 HOP_0
+            else
+            {
+                counter_bin = counter_bin + 1;
+                if (counter_bin == MAX_NUMBER)
+                {
+                    put_bits(&s->pb, BIT_NUMBER, MAX_NUMBER);
+                    counter_bin = 0;
+                    counter_hop_0 = MAX_HOPS;
+                }
+            }
+        }
+        // If not HOP_0
+        else
+        {
+            // If previous HOP_0
+            if (counter_bin != 0)
+            {
+                put_bits(&s->pb, BIT_NUMBER, counter_bin); 
+            }
+            // If not previous HOP_0
+            else
+            {
+            // If max_hops HOP_0 before, we send 0
+                if (counter_hop_0 == MAX_HOPS)
+                {
+                    put_bits(&s->pb, BIT_NUMBER, 0); 
+                }
+            }       
+            uint32_t code =  he_X[ lheX->hops[i] ].code;
+            uint32_t leng =  he_X[ lheX->hops[i] ].len;
+            int mask = 0;
+            for (int ll=0; ll<leng; ll++)
+            {
+                    if(ll==0)
+                    {
+                        int val = he_X[HOP_0].code;
+                        for (int mm=0; mm<(leng-(ll+1)); mm++)
+                        {
+                             val = val*2;
+                        }
+                        mask += val;
+                    }
+                    else
+                    {
+                        int val = !(he_X[HOP_0].code);
+                        for (int mm=0; mm<(leng-(ll+1)); mm++)
+                        {
+                             val = val*2;
+                        }
+                        mask += val;
+                    }
+            } 
+//             if (counter_bin != 0)
+//             {
+//                     put_bits(&s->pb,leng-1, code&mask);  // truncado 
+//             }
+//             else{
+//                 if (counter_hop_0 == MAX_HOPS)
+//                 {
+//                     put_bits(&s->pb,leng-1, code&mask);  // truncado 
+//                 }
+//                 else
+//                 {
+                    put_bits(&s->pb, he_X[ lheX->hops[i] ].len, he_X[ lheX->hops[i] ].code);  // NO truncado 
+/*                }
+            }  */         
+            counter_hop_0 = 0;
+            counter_bin = 0;
+        }
+    }
+}
+
 /**
  * Generates Huffman for BASIC LHE
  * 
@@ -354,7 +626,7 @@ static int lhe_basic_write_file(AVCodecContext *avctx, AVPacket *pkt,
     gettimeofday(&before , NULL);
 
     //Generates Huffman
-    n_bits_hops = lhe_basic_gen_huffman (he_Y, he_UV, 
+    n_bits_hops = lhe_basic_gen_huffman_rlc (he_Y, he_UV, 
                                          (&s->lheY)->hops, (&s->lheU)->hops, (&s->lheV)->hops, 
                                          image_size_Y, image_size_UV);
     
@@ -437,21 +709,13 @@ static int lhe_basic_write_file(AVCodecContext *avctx, AVPacket *pkt,
         put_bits(&s->pb, LHE_HUFFMAN_NODE_BITS_SYMBOLS, he_UV[i].len);
     }   
     
-    //Write signals of the image
-    for (i=0; i<image_size_Y; i++) 
-    {        
-        put_bits(&s->pb, he_Y[lheY->hops[i]].len , he_Y[lheY->hops[i]].code);
-    }
-    
-    for (i=0; i<image_size_UV; i++) 
-    {        
-       put_bits(&s->pb, he_UV[lheU->hops[i]].len , he_UV[lheU->hops[i]].code);
-    }
-    
-    for (i=0; i<image_size_UV; i++) 
-    {
-        put_bits(&s->pb, he_UV[lheV->hops[i]].len , he_UV[lheV->hops[i]].code);
-    }
+//     sin_rlc(image_size_Y, s, he_Y, lheY);
+//     sin_rlc(image_size_UV, s, he_UV, lheU);
+//     sin_rlc(image_size_UV, s, he_UV, lheV);
+
+    con_rlc(image_size_Y, s, he_Y, lheY);
+    con_rlc(image_size_UV, s, he_UV, lheU);
+    con_rlc(image_size_UV, s, he_UV, lheV);
     
     flush_put_bits(&s->pb);
         
