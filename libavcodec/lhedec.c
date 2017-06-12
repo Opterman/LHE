@@ -238,28 +238,20 @@ static uint8_t lhe_translate_huffman_into_interval (uint32_t huffman_symbol, Lhe
     uint8_t symbol, count_bits;
     uint32_t huffman_symbol, decoded_symbols,aux_huffman_symbol;
     unsigned int counter_hop_0, mask;
-    int contador;
-    int modo;
-    int total;
+    int contador, modo, total;
 
     symbol = NO_SYMBOL;
     decoded_symbols = 0;
     huffman_symbol = 0;
     count_bits = 0;
     counter_hop_0 = 0;
-    contador = 0;
     modo = 0;
     total = 0;
 
     
-    
     while (decoded_symbols<image_size)
     {    
         
-        
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
         // Modo 0: de 1 en 1 bit. Cuando 4 4a -> Modo 1
         if(modo == 0){
             
@@ -276,7 +268,6 @@ static uint8_t lhe_translate_huffman_into_interval (uint32_t huffman_symbol, Lhe
                     count_bits = 0;
                     symbols[decoded_symbols] = HOP_0;
                     contador = contador + 1;
-//                  av_log(NULL, AV_LOG_INFO,"%d;",symbol); if((contador+1) % 100 == 0){av_log(NULL, AV_LOG_INFO,"\n");}
                     decoded_symbols = decoded_symbols+1;
                     if(decoded_symbols == image_size){break;}     /// FAILAZO
                     modo = 1;
@@ -288,11 +279,9 @@ static uint8_t lhe_translate_huffman_into_interval (uint32_t huffman_symbol, Lhe
                     {      
                         symbols[decoded_symbols] = symbol;
                         contador = contador + 1;
-//                         av_log(NULL, AV_LOG_INFO,"%d;",symbol); if((contador+1) % 100 == 0){av_log(NULL, AV_LOG_INFO,"\n");}
                         decoded_symbols = decoded_symbols+1;
                         huffman_symbol = 0;
                         count_bits = 0;
-//                         if(decoded_symbols == image_size){break;}
                     }   
                 }
                 
@@ -306,17 +295,13 @@ static uint8_t lhe_translate_huffman_into_interval (uint32_t huffman_symbol, Lhe
                 {      
                     symbols[decoded_symbols] = symbol;
                     contador = contador + 1;
-//                     av_log(NULL, AV_LOG_INFO,"%d;",symbol); if((contador+1) % 100 == 0){av_log(NULL, AV_LOG_INFO,"\n");}
                     decoded_symbols = decoded_symbols+1;
                     huffman_symbol = 0;
                     count_bits = 0;
                 }   
             }
         }
-        
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        
+
         // Modo 1: de 3 en 3 bits hasta que no sea 7 -> Modo 2
         if(modo == 1){
             
@@ -330,191 +315,58 @@ static uint8_t lhe_translate_huffman_into_interval (uint32_t huffman_symbol, Lhe
             }
         }
 
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        
+
         // Modo 2: El total de 4s -> Modo 3
         if(modo == 2){
             for (int i=0; i< total; i++) 
             {    
                 symbols[decoded_symbols] = HOP_0;
                 contador = contador + 1;
-//              av_log(NULL, AV_LOG_INFO,"%d;",symbol); if((contador+1) % 100 == 0){av_log(NULL, AV_LOG_INFO,"\n");}
                 decoded_symbols = decoded_symbols+1;
             }
             total = 0;     
-            modo = 3;
-//             modo = 0;
-        }
-
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        
-        // Modo 3: Lo de la mascara -> Modo 1
-        if(modo == 3){
-            
-            mask = 2;
-            count_bits = 0;
-            while(mask != 0)
-            {
-                
-                huffman_symbol = ( (huffman_symbol<<1) | get_bits(&s->gb, 1) );
-                aux_huffman_symbol = huffman_symbol | mask;
-                count_bits++;
-                symbol = lhe_translate_huffman_into_symbol(aux_huffman_symbol, he, (count_bits+1) );
-                if (symbol != NO_SYMBOL)
-                {      
-                    symbols[decoded_symbols] = symbol;
-                    contador = contador + 1;                 
-//                         av_log(NULL, AV_LOG_INFO,"%d;",symbol); if((contador+1) % 100 == 0){av_log(NULL, AV_LOG_INFO,"\n");}
-                    decoded_symbols = decoded_symbols+1;
-                    huffman_symbol = 0;
-                    aux_huffman_symbol = 0;
-                    count_bits = 0;
-                    mask = 0;
-                    symbol=0;
-                }  
-                else
-                {
-                    mask = mask*2; 
-                }
-                
-            }
-            
-            counter_hop_0 = 0;
+            // modo = 3;
             modo = 0;
-            
         }
-        
-        
+   
+//         // Modo 3: Lo de la mascara -> Modo 1
+//         if(modo == 3){
+//             
+//             mask = 2;
+//             count_bits = 0;
+//             while(mask != 0)
+//             {
+//                 
+//                 huffman_symbol = ( (huffman_symbol<<1) | get_bits(&s->gb, 1) );
+//                 aux_huffman_symbol = huffman_symbol | mask;
+//                 count_bits++;
+//                 symbol = lhe_translate_huffman_into_symbol(aux_huffman_symbol, he, (count_bits+1) );
+//                 if (symbol != NO_SYMBOL)
+//                 {      
+//                     symbols[decoded_symbols] = symbol;
+//                     contador = contador + 1;                 
+//                     decoded_symbols = decoded_symbols+1;
+//                     huffman_symbol = 0;
+//                     aux_huffman_symbol = 0;
+//                     count_bits = 0;
+//                     mask = 0;
+//                     symbol=0;
+//                 }  
+//                 else
+//                 {
+//                     mask = mask*2; 
+//                 }
+//                 
+//             }
+//             
+//             counter_hop_0 = 0;
+//             modo = 0;
+//             
+//         }
+           
         
     }
-     
     
-    /*
-    while (decoded_symbols<image_size)
-    {      
-        
-//         av_log(NULL, AV_LOG_INFO, "%d ", get_bits(&s->gb, 1));
-//         decoded_symbols++;
-//         if((decoded_symbols+1) % 100 == 0){
-//             av_log (NULL, AV_LOG_INFO, "\n");    
-//         }
-        
-        
-        
-        
-        // SIMBOLO, 4 o no 4
-        huffman_symbol = (huffman_symbol<<1) | get_bits(&s->gb, 1);
-        count_bits++;
-        symbol = lhe_translate_huffman_into_symbol(huffman_symbol, he, count_bits);
-        
-        if(symbol == HOP_0)
-        {   
-            counter_hop_0++; 
-            if(counter_hop_0 == (MAX_HOPS))
-            {
-                count_bits = 0;
-                symbols[decoded_symbols] = HOP_0;
-                contador = contador + 1;
-//                 av_log(NULL, AV_LOG_INFO,"%d;",symbol); if((contador+1) % 100 == 0){av_log(NULL, AV_LOG_INFO,"\n");}
-                decoded_symbols = decoded_symbols+1;
-                if(decoded_symbols == image_size){break;}
-                
-                
-                //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                huffman_symbol = 0;
-                int total = 0;
-                int number = get_bits(&s->gb, BIT_NUMBER);
-                if (number != MAX_NUMBER)
-                {
-                    total = number;
-                }
-                else
-                {
-                    total = total + number;
-                    while(number == MAX_NUMBER)
-                    {
-                        number = get_bits(&s->gb, BIT_NUMBER);
-                        total = total + number;
-                    }
-                }       
-
-                
-                for (int i=0; i< total; i++) 
-                {    
-                    symbols[decoded_symbols] = HOP_0;
-                    contador = contador + 1;
-//                     av_log(NULL, AV_LOG_INFO,"%d;",symbol); if((contador+1) % 100 == 0){av_log(NULL, AV_LOG_INFO,"\n");}
-                    decoded_symbols = decoded_symbols+1;
-                }
-                if(decoded_symbols == image_size){break;}
-                //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                
-                
-                mask = 2;
-                count_bits = 0;
-                while(mask != 0)
-                {
-                    huffman_symbol = ( (huffman_symbol<<1) | get_bits(&s->gb, 1) );
-                    aux_huffman_symbol = huffman_symbol | mask;
-                    count_bits++;
-                    symbol = lhe_translate_huffman_into_symbol(aux_huffman_symbol, he, (count_bits+1) );
-                    if (symbol != NO_SYMBOL)
-                    {      
-                        symbols[decoded_symbols] = symbol;
-                        contador = contador + 1;                 
-//                         av_log(NULL, AV_LOG_INFO,"%d;",symbol); if((contador+1) % 100 == 0){av_log(NULL, AV_LOG_INFO,"\n");}
-                        decoded_symbols = decoded_symbols+1;
-                        huffman_symbol = 0;
-                        aux_huffman_symbol = 0;
-                        count_bits = 0;
-                        mask = 0;
-                        symbol=0;
-                        if(decoded_symbols == image_size){break;}
-                    }  
-                    else
-                    {
-                        mask = mask*2; 
-                    }
-                }
-                //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                
-                counter_hop_0 = 0;
-            }
-            else
-            {
-                symbol = lhe_translate_huffman_into_symbol(huffman_symbol, he, count_bits);
-                if (symbol != NO_SYMBOL)
-                {      
-                    symbols[decoded_symbols] = symbol;
-                    contador = contador + 1;
-//                     av_log(NULL, AV_LOG_INFO,"%d;",symbol); if((contador+1) % 100 == 0){av_log(NULL, AV_LOG_INFO,"\n");}
-                    decoded_symbols = decoded_symbols+1;
-                    huffman_symbol = 0;
-                    count_bits = 0;
-                    if(decoded_symbols == image_size){break;}
-                }   
-            }
-        }
-        else
-        {                       
-            counter_hop_0 = 0; 
-            symbol = lhe_translate_huffman_into_symbol(huffman_symbol, he, count_bits);
-            if (symbol != NO_SYMBOL)
-            {      
-                symbols[decoded_symbols] = symbol;
-                contador = contador + 1;
-//                 av_log(NULL, AV_LOG_INFO,"%d;",symbol); if((contador+1) % 100 == 0){av_log(NULL, AV_LOG_INFO,"\n");}
-                decoded_symbols = decoded_symbols+1;
-                huffman_symbol = 0;
-                count_bits = 0;
-                if(decoded_symbols == image_size){break;}
-            }   
-        }
-    
-        
-    }*/
     return;
     
        
