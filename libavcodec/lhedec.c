@@ -245,7 +245,14 @@ static void lhe_basic_read_file_symbols (LheState *s, LheHuffEntry *he, uint32_t
 
 
 
-
+/**
+ * Reads file symbols of basic lhe file using RLC 
+ * 
+ * @param s Lhe parameters
+ * @param he LHE Huffman entry
+ * @param image_size image size
+ * @param *symbols Symbols read from file
+ */
 static void lhe_basic_read_file_symbols_rlc (LheState *s, LheHuffEntry *he, uint32_t image_size, uint8_t *symbols)
  {
     uint8_t symbol, count_bits;
@@ -1569,13 +1576,14 @@ static int lhe_decode_frame(AVCodecContext *avctx, void *data, int *got_frame, A
     else /*BASIC LHE*/       
     {
 
-        //lhe_basic_read_file_symbols(s, he_Y, image_size_Y, (&s->lheY)->hops);     
-        //lhe_basic_read_file_symbols(s, he_UV, image_size_UV, (&s->lheU)->hops);      
-        //lhe_basic_read_file_symbols(s, he_UV, image_size_UV, (&s->lheV)->hops);      
- 
-        lhe_basic_read_file_symbols_rlc(s, he_Y, image_size_Y, (&s->lheY)->hops);     
-        lhe_basic_read_file_symbols_rlc(s, he_UV, image_size_UV, (&s->lheU)->hops);      
-        lhe_basic_read_file_symbols_rlc(s, he_UV, image_size_UV, (&s->lheV)->hops);
+        lhe_basic_read_file_symbols(s, he_Y, image_size_Y, (&s->lheY)->hops);     
+        lhe_basic_read_file_symbols(s, he_UV, image_size_UV, (&s->lheU)->hops);      
+        lhe_basic_read_file_symbols(s, he_UV, image_size_UV, (&s->lheV)->hops);      
+        
+        /// RLC-MODE
+        /// lhe_basic_read_file_symbols_rlc(s, he_Y, image_size_Y, (&s->lheY)->hops);     
+        /// lhe_basic_read_file_symbols_rlc(s, he_UV, image_size_UV, (&s->lheU)->hops);      
+        /// lhe_basic_read_file_symbols_rlc(s, he_UV, image_size_UV, (&s->lheV)->hops);
         
         if (total_blocks > 1 && OPENMP_FLAGS == CONFIG_OPENMP) 
         {
