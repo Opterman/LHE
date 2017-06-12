@@ -351,20 +351,20 @@ static int get_bits_for_rlc(int image_size, LheHuffEntry* he_X, uint8_t* symbols
                         mask += val;
                     }
             }
-//             if (counter_bin != 0)
-//             {
-//                     aux_n_bits  = aux_n_bits + leng - 1; 
-//             }
-//             else{
-//                 if (counter_hop_0 == MAX_HOPS)
-//                 {
-//                     aux_n_bits  = aux_n_bits + leng - 1;
-//                 }
-//                 else
-//                 {
+            if (counter_bin != 0)
+            {
+                    aux_n_bits  = aux_n_bits + leng - 1; 
+            }
+            else{
+                if (counter_hop_0 == MAX_HOPS)
+                {
+                    aux_n_bits  = aux_n_bits + leng - 1;
+                }
+                else
+                {
                     aux_n_bits  = aux_n_bits + he_X[symbols_X[hh]].len;
-/*                }
-            }  */         
+                }
+            }           
             counter_hop_0 = 0;
             counter_bin = 0;
         }
@@ -539,44 +539,44 @@ static void con_rlc(int image_size, LheContext* s, LheHuffEntry* he_X, LheImage*
             }
             
             uint32_t code =  he_X[ lheX->hops[i] ].code;
-//             uint32_t leng =  he_X[ lheX->hops[i] ].len;
-//             int mask = 0;
-//             for (int ll=0; ll<leng; ll++)
-//             {
-//                     if(ll==0)
-//                     {
-//                         int val = he_X[HOP_0].code;
-//                         for (int mm=0; mm<(leng-(ll+1)); mm++)
-//                         {
-//                              val = val*2;
-//                         }
-//                         mask += val;
-//                     }
-//                     else
-//                     {
-//                         int val = !(he_X[HOP_0].code);
-//                         for (int mm=0; mm<(leng-(ll+1)); mm++)
-//                         {
-//                              val = val*2;
-//                         }
-//                         mask += val;
-//                     }
-//             }
-//             
-//             if (counter_bin != 0)
-//             {
-//                     put_bits(&s->pb,leng-1, code&mask);  // truncado 
-//             }
-//             else{
-//                 if (counter_hop_0 == MAX_HOPS)
-//                 {
-//                     put_bits(&s->pb,leng-1, code&mask);  // truncado 
-//                 }
-//                 else
-//                 {
+            uint32_t leng =  he_X[ lheX->hops[i] ].len;
+            int mask = 0;
+            for (int ll=0; ll<leng; ll++)
+            {
+                    if(ll==0)
+                    {
+                        int val = he_X[HOP_0].code;
+                        for (int mm=0; mm<(leng-(ll+1)); mm++)
+                        {
+                             val = val*2;
+                        }
+                        mask += val;
+                    }
+                    else
+                    {
+                        int val = !(he_X[HOP_0].code);
+                        for (int mm=0; mm<(leng-(ll+1)); mm++)
+                        {
+                             val = val*2;
+                        }
+                        mask += val;
+                    }
+            }
+            
+            if (counter_bin != 0)
+            {
+                    put_bits(&s->pb,leng-1, code&mask);  // truncado 
+            }
+            else{
+                if (counter_hop_0 == MAX_HOPS)
+                {
+                    put_bits(&s->pb,leng-1, code&mask);  // truncado 
+                }
+                else
+                {
                     put_bits(&s->pb, he_X[ lheX->hops[i] ].len, he_X[ lheX->hops[i] ].code);  // NO truncado 
-//              }
-//          }           
+             }
+         }           
             counter_hop_0 = 0;
             counter_bin = 0;
         }

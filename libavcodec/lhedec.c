@@ -343,48 +343,48 @@ static uint8_t lhe_translate_huffman_into_interval (uint32_t huffman_symbol, Lhe
                 decoded_symbols = decoded_symbols+1;
             }
             total = 0;     
-            // modo = 3;
-            modo = 0;
+            modo = 3;
+//             modo = 0;
         }
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         
-//         // Modo 3: Lo de la mascara -> Modo 1
-//         if(modo == 3){
-//             
-//             mask = 2;
-//             count_bits = 0;
-//             while(mask != 0)
-//             {
-//                 
-//                 huffman_symbol = ( (huffman_symbol<<1) | get_bits(&s->gb, 1) );
-//                 aux_huffman_symbol = huffman_symbol | mask;
-//                 count_bits++;
-//                 symbol = lhe_translate_huffman_into_symbol(aux_huffman_symbol, he, (count_bits+1) );
-//                 if (symbol != NO_SYMBOL)
-//                 {      
-//                     symbols[decoded_symbols] = symbol;
-//                     contador = contador + 1;                 
-// //                         av_log(NULL, AV_LOG_INFO,"%d;",symbol); if((contador+1) % 100 == 0){av_log(NULL, AV_LOG_INFO,"\n");}
-//                     decoded_symbols = decoded_symbols+1;
-//                     huffman_symbol = 0;
-//                     aux_huffman_symbol = 0;
-//                     count_bits = 0;
-//                     mask = 0;
-//                     symbol=0;
-//                 }  
-//                 else
-//                 {
-//                     mask = mask*2; 
-//                 }
-//                 
-//             }
-//             
-//             counter_hop_0 = 0;
-//             modo = 0;
-//             
-//         }
+        // Modo 3: Lo de la mascara -> Modo 1
+        if(modo == 3){
+            
+            mask = 2;
+            count_bits = 0;
+            while(mask != 0)
+            {
+                
+                huffman_symbol = ( (huffman_symbol<<1) | get_bits(&s->gb, 1) );
+                aux_huffman_symbol = huffman_symbol | mask;
+                count_bits++;
+                symbol = lhe_translate_huffman_into_symbol(aux_huffman_symbol, he, (count_bits+1) );
+                if (symbol != NO_SYMBOL)
+                {      
+                    symbols[decoded_symbols] = symbol;
+                    contador = contador + 1;                 
+//                         av_log(NULL, AV_LOG_INFO,"%d;",symbol); if((contador+1) % 100 == 0){av_log(NULL, AV_LOG_INFO,"\n");}
+                    decoded_symbols = decoded_symbols+1;
+                    huffman_symbol = 0;
+                    aux_huffman_symbol = 0;
+                    count_bits = 0;
+                    mask = 0;
+                    symbol=0;
+                }  
+                else
+                {
+                    mask = mask*2; 
+                }
+                
+            }
+            
+            counter_hop_0 = 0;
+            modo = 0;
+            
+        }
         
         
         
