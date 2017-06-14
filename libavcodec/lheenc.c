@@ -541,11 +541,12 @@ static void con_rlc(int image_size, LheContext* s, LheHuffEntry* he_X, LheImage*
     counter_bin   = 0;
     count__ = 0;
     
+    av_log (NULL, AV_LOG_INFO, "\n");
     for (int i=0; i<image_size; i++)
     {    
-//         av_log (NULL, AV_LOG_INFO, "%d;", lheX->hops[i]);
-//         count__ = count__ + 1;
-//         if((count__+1) % 100 == 0){av_log (NULL, AV_LOG_INFO, "\n");}
+        av_log (NULL, AV_LOG_INFO, "i:%d s:%d;", i, lheX->hops[i]);
+        count__ = count__ + 1;
+        if((count__+1) % 100 == 0){av_log (NULL, AV_LOG_INFO, "\n");}
         //If HOP_0
         if ( ( lheX->hops[i] ) == HOP_0 )
         {
@@ -608,20 +609,20 @@ static void con_rlc(int image_size, LheContext* s, LheHuffEntry* he_X, LheImage*
                         mask += val;
                     }
             } 
-//             if (counter_bin != 0)
-//             {
-//                     put_bits(&s->pb,leng-1, code&mask);  // truncado 
-//             }
-//             else{
-//                 if (counter_hop_0 == MAX_HOPS)
-//                 {
-//                     put_bits(&s->pb,leng-1, code&mask);  // truncado 
-//                 }
-//                 else
-//                 {
+            if (counter_bin != 0)
+            {
+                    put_bits(&s->pb,leng-1, code&mask);  // truncado 
+            }
+            else{
+                if (counter_hop_0 == MAX_HOPS)
+                {
+                    put_bits(&s->pb,leng-1, code&mask);  // truncado 
+                }
+                else
+                {
                     put_bits(&s->pb, he_X[ lheX->hops[i] ].len, he_X[ lheX->hops[i] ].code);  // NO truncado 
-/*                }
-            }  */         
+                }
+            }           
             counter_hop_0 = 0;
             counter_bin = 0;
         }
@@ -671,9 +672,9 @@ static int lhe_basic_write_file(AVCodecContext *avctx, AVPacket *pkt,
     gettimeofday(&before , NULL);
 
     //Generates Huffman
-    n_bits_hops = lhe_basic_gen_huffman (he_Y, he_UV, (&s->lheY)->hops, (&s->lheU)->hops, (&s->lheV)->hops, image_size_Y, image_size_UV);      
+    // n_bits_hops = lhe_basic_gen_huffman (he_Y, he_UV, (&s->lheY)->hops, (&s->lheU)->hops, (&s->lheV)->hops, image_size_Y, image_size_UV);      
     /// RLC-MODE
-    /// n_bits_hops = lhe_basic_gen_huffman_rlc (he_Y, he_UV, (&s->lheY)->hops, (&s->lheU)->hops, (&s->lheV)->hops, image_size_Y, image_size_UV);   
+    n_bits_hops = lhe_basic_gen_huffman_rlc (he_Y, he_UV, (&s->lheY)->hops, (&s->lheU)->hops, (&s->lheV)->hops, image_size_Y, image_size_UV);   
     
     n_bytes_components = n_bits_hops/8;          
        
@@ -753,14 +754,14 @@ static int lhe_basic_write_file(AVCodecContext *avctx, AVPacket *pkt,
         put_bits(&s->pb, LHE_HUFFMAN_NODE_BITS_SYMBOLS, he_UV[i].len);
     }   
     
-    sin_rlc(image_size_Y, s, he_Y, lheY);
-    sin_rlc(image_size_UV, s, he_UV, lheU);
-    sin_rlc(image_size_UV, s, he_UV, lheV);
+    // sin_rlc(image_size_Y, s, he_Y, lheY);
+    // sin_rlc(image_size_UV, s, he_UV, lheU);
+    // sin_rlc(image_size_UV, s, he_UV, lheV);
 
     /// RLC-MODE
-//     con_rlc(image_size_Y, s, he_Y, lheY);
-//     con_rlc(image_size_UV, s, he_UV, lheU);
-//     con_rlc(image_size_UV, s, he_UV, lheV);
+    con_rlc(image_size_Y, s, he_Y, lheY);
+    con_rlc(image_size_UV, s, he_UV, lheU);
+    con_rlc(image_size_UV, s, he_UV, lheV);
     
     flush_put_bits(&s->pb);
         
