@@ -255,6 +255,20 @@ static void lhe_basic_read_file_symbols (LheState *s, LheHuffEntry *he, uint32_t
  */
 static void lhe_basic_read_file_symbols_rlc (LheState *s, LheHuffEntry *he, uint32_t image_size, uint8_t *symbols)
  {
+
+    // av_log (NULL, AV_LOG_INFO, "\n\n\n\n\n");
+
+    // int decoded_symbols = 0;
+    // while (decoded_symbols<image_size)
+    // {
+
+    //     av_log (NULL, AV_LOG_INFO, "%d;", get_bits(&s->gb, 1));
+    //     decoded_symbols ++;
+    //     if(decoded_symbols%100 == 0){  av_log(NULL, AV_LOG_INFO, "\n");    }
+
+    // }
+
+    
     uint8_t symbol, count_bits;
     uint32_t huffman_symbol,aux_huffman_symbol;
     int decoded_symbols;
@@ -339,20 +353,31 @@ static void lhe_basic_read_file_symbols_rlc (LheState *s, LheHuffEntry *he, uint
 
         // Modo 1: de 3 en 3 bits hasta que no sea 7 -> Modo 2
         else if(modo == 1){
+                        
+            // if(a > 65532){
+            //     av_log (NULL, AV_LOG_INFO, "-- %d --", get_bits(&s->gb, BIT_NUMBER));
+            // }
             
             huffman_symbol = 0;
             int number = get_bits(&s->gb, BIT_NUMBER);
             total = total + number;
-            
+
+
             if (number != MAX_NUMBER)
             {
                 modo = 2;
             }
+
+            av_log (NULL, AV_LOG_INFO, "t:%d n:%d", total, number);
+
         }
 
 
         // Modo 2: El total de 4s -> Modo 3
         else if(modo == 2){
+            
+            av_log (NULL, AV_LOG_INFO, "t_2:%d", total);
+
             for (int i=0; i< total; i++) 
             {    
                 symbols[decoded_symbols] = HOP_0;
@@ -361,9 +386,11 @@ static void lhe_basic_read_file_symbols_rlc (LheState *s, LheHuffEntry *he, uint
                 av_log (NULL, AV_LOG_INFO, "d:%d c:%d s:%d;", decoded_symbols, contador, symbol);
                 if(contador%100 == 0){  av_log(NULL, AV_LOG_INFO, "\n");    }
             }
+        
             total = 0;     
             modo = 3; // Para usar truncado
             // modo = 0;  // Sin truncado
+        
         }
  
 
@@ -408,7 +435,7 @@ static void lhe_basic_read_file_symbols_rlc (LheState *s, LheHuffEntry *he, uint
 
 
     return;   
-
+    
 
  }
 

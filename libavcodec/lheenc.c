@@ -542,6 +542,7 @@ static void con_rlc(int image_size, LheContext* s, LheHuffEntry* he_X, LheImage*
     count__ = 0;
     
     av_log (NULL, AV_LOG_INFO, "\n");
+
     for (int i=0; i<image_size; i++)
     {    
         av_log (NULL, AV_LOG_INFO, "i:%d s:%d;", i, lheX->hops[i]);
@@ -575,6 +576,7 @@ static void con_rlc(int image_size, LheContext* s, LheHuffEntry* he_X, LheImage*
             if (counter_bin != 0)
             {
                 put_bits(&s->pb, BIT_NUMBER, counter_bin); 
+
             }
             // If not previous HOP_0
             else
@@ -627,6 +629,18 @@ static void con_rlc(int image_size, LheContext* s, LheHuffEntry* he_X, LheImage*
             counter_bin = 0;
         }
     }
+
+
+    // av_log (NULL, AV_LOG_INFO, "\n\n\n");
+    // av_log (NULL, AV_LOG_INFO, "counter_bin: %d;", counter_bin);
+    // av_log (NULL, AV_LOG_INFO, "\n\n\n");
+
+    if (counter_bin != 0)
+    {
+        put_bits(&s->pb, BIT_NUMBER, counter_bin); 
+
+    }
+
 }
 
 
