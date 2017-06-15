@@ -352,21 +352,98 @@ static uint64_t lhe_basic_gen_huffman_rlc (LheHuffEntry *he_Y, LheHuffEntry *he_
                                        uint8_t *symbols_Y, uint8_t *symbols_U, uint8_t *symbols_V,
                                        int image_size_Y, int image_size_UV)
 {
+
+    // int i, ret, n_bits;
+    // float bpp;
+    // uint8_t  huffman_lengths_Y[LHE_MAX_HUFF_SIZE_SYMBOLS];
+    // uint8_t  huffman_lengths_UV[LHE_MAX_HUFF_SIZE_SYMBOLS];
+    // uint64_t symbol_count_Y[LHE_MAX_HUFF_SIZE_SYMBOLS]     = { 0 };
+    // uint64_t symbol_count_UV[LHE_MAX_HUFF_SIZE_SYMBOLS]    = { 0 };
+
+    // //LUMINANCE
+    // //First compute luminance probabilities from model
+    // for (i=0; i<image_size_Y; i++) {
+    //     symbol_count_Y[symbols_Y[i]]++; //Counts occurrences of different luminance symbols
+    // }
+    // //Generates Huffman length for luminance signal
+    // if ((ret = ff_huff_gen_len_table(huffman_lengths_Y, symbol_count_Y, LHE_MAX_HUFF_SIZE_SYMBOLS, 1)) < 0)
+    //     return ret;
+    // //Fills he_Y struct with data
+    // for (i = 0; i < LHE_MAX_HUFF_SIZE_SYMBOLS; i++) {
+    //     he_Y[i].len = huffman_lengths_Y[i];
+    //     he_Y[i].count = symbol_count_Y[i];
+    //     he_Y[i].sym = i;
+    //     he_Y[i].code = 1024; //imposible code to initialize
+    // }
+    // //Generates luminance Huffman codes
+    // lhe_generate_huffman_codes(he_Y, LHE_MAX_HUFF_SIZE_SYMBOLS);
+    
+    // //CHROMINANCES (same Huffman table for both chrominances)
+
+    // //First, compute chrominance probabilities.
+    // for (i=0; i<image_size_UV; i++) {
+    //     symbol_count_UV[symbols_U[i]]++; //Counts occurrences of different chrominance U symbols
+    // }
+
+    // for (i=0; i<image_size_UV; i++) {
+    //     symbol_count_UV[symbols_V[i]]++; //Counts occurrences of different chrominance V symbols
+    // }
+
+
+    //  //Generates Huffman length for chrominance signals
+    // if ((ret = ff_huff_gen_len_table(huffman_lengths_UV, symbol_count_UV, LHE_MAX_HUFF_SIZE_SYMBOLS, 1)) < 0)
+    //     return ret;
+
+    // //Fills he_UV data
+    // for (i = 0; i < LHE_MAX_HUFF_SIZE_SYMBOLS; i++) {
+    //     he_UV[i].len = huffman_lengths_UV[i];
+    //     he_UV[i].count = symbol_count_UV[i];
+    //     he_UV[i].sym = i;
+    //     he_UV[i].code = 1024;
+    // }
+    
+
+
+
+    // lhe_generate_huffman_codes(he_UV, LHE_MAX_HUFF_SIZE_SYMBOLS);
+    
+    // n_bits += get_bits_for_rlc(image_size_Y, he_Y, symbols_Y);    
+    // n_bits += get_bits_for_rlc(image_size_UV, he_UV, symbols_U);
+    // n_bits += get_bits_for_rlc(image_size_UV, he_UV, symbols_V);
+
+
+
+
+    // bpp = 1.0*n_bits/image_size_Y;
+
+    // av_log (NULL, AV_LOG_INFO, "Y bpp: %f ", bpp );
+
+    // bpp = 1.0*n_bits/image_size_Y;
+
+    // av_log (NULL, AV_LOG_INFO, "YUV bpp: %f ", bpp );
+
+    // return n_bits;
+
+
+
     int i, ret, n_bits;
     float bpp;
     uint8_t  huffman_lengths_Y[LHE_MAX_HUFF_SIZE_SYMBOLS];
     uint8_t  huffman_lengths_UV[LHE_MAX_HUFF_SIZE_SYMBOLS];
     uint64_t symbol_count_Y[LHE_MAX_HUFF_SIZE_SYMBOLS]     = { 0 };
     uint64_t symbol_count_UV[LHE_MAX_HUFF_SIZE_SYMBOLS]    = { 0 };
-
+    
     //LUMINANCE
+    
     //First compute luminance probabilities from model
     for (i=0; i<image_size_Y; i++) {
         symbol_count_Y[symbols_Y[i]]++; //Counts occurrences of different luminance symbols
     }
+    
     //Generates Huffman length for luminance signal
     if ((ret = ff_huff_gen_len_table(huffman_lengths_Y, symbol_count_Y, LHE_MAX_HUFF_SIZE_SYMBOLS, 1)) < 0)
         return ret;
+    
     //Fills he_Y struct with data
     for (i = 0; i < LHE_MAX_HUFF_SIZE_SYMBOLS; i++) {
         he_Y[i].len = huffman_lengths_Y[i];
@@ -374,25 +451,32 @@ static uint64_t lhe_basic_gen_huffman_rlc (LheHuffEntry *he_Y, LheHuffEntry *he_
         he_Y[i].sym = i;
         he_Y[i].code = 1024; //imposible code to initialize
     }
-    //Generates luminance Huffman codes
+    
+    // new
     lhe_generate_huffman_codes(he_Y, LHE_MAX_HUFF_SIZE_SYMBOLS);
+
+    //Generates luminance Huffman codes
+    // n_bits = lhe_generate_huffman_codes(he_Y, LHE_MAX_HUFF_SIZE_SYMBOLS);
+    // bpp = 1.0*n_bits/image_size_Y;
+    
+    //av_log (NULL, AV_LOG_INFO, "Y bpp: %f ", bpp );
     
     //CHROMINANCES (same Huffman table for both chrominances)
-
+    
     //First, compute chrominance probabilities.
     for (i=0; i<image_size_UV; i++) {
         symbol_count_UV[symbols_U[i]]++; //Counts occurrences of different chrominance U symbols
     }
-
+    
     for (i=0; i<image_size_UV; i++) {
         symbol_count_UV[symbols_V[i]]++; //Counts occurrences of different chrominance V symbols
     }
 
-
+    
      //Generates Huffman length for chrominance signals
     if ((ret = ff_huff_gen_len_table(huffman_lengths_UV, symbol_count_UV, LHE_MAX_HUFF_SIZE_SYMBOLS, 1)) < 0)
         return ret;
-
+    
     //Fills he_UV data
     for (i = 0; i < LHE_MAX_HUFF_SIZE_SYMBOLS; i++) {
         he_UV[i].len = huffman_lengths_UV[i];
@@ -400,20 +484,18 @@ static uint64_t lhe_basic_gen_huffman_rlc (LheHuffEntry *he_Y, LheHuffEntry *he_
         he_UV[i].sym = i;
         he_UV[i].code = 1024;
     }
+
+    //Generates chrominance Huffman codes
+    // n_bits += lhe_generate_huffman_codes(he_UV, LHE_MAX_HUFF_SIZE_SYMBOLS);
+    // bpp = 1.0*n_bits/image_size_Y;
+    //av_log (NULL, AV_LOG_INFO, "YUV bpp: %f ", bpp );
+    // av_log (NULL, AV_LOG_INFO, "he_Y[%d] \n", he_Y[HOP_0].code);
     
+    // new 
     lhe_generate_huffman_codes(he_UV, LHE_MAX_HUFF_SIZE_SYMBOLS);
-    
     n_bits += get_bits_for_rlc(image_size_Y, he_Y, symbols_Y);    
     n_bits += get_bits_for_rlc(image_size_UV, he_UV, symbols_U);
     n_bits += get_bits_for_rlc(image_size_UV, he_UV, symbols_V);
-
-    bpp = 1.0*n_bits/image_size_Y;
-
-    av_log (NULL, AV_LOG_INFO, "Y bpp: %f ", bpp );
-
-    bpp = 1.0*n_bits/image_size_Y;
-
-    av_log (NULL, AV_LOG_INFO, "YUV bpp: %f ", bpp );
 
     return n_bits;
 
@@ -498,7 +580,7 @@ static uint64_t lhe_basic_gen_huffman (LheHuffEntry *he_Y, LheHuffEntry *he_UV,
     
     //av_log (NULL, AV_LOG_INFO, "YUV bpp: %f ", bpp );
     
-    av_log (NULL, AV_LOG_INFO, "he_Y[%d] \n", he_Y[HOP_0].code);
+    // av_log (NULL, AV_LOG_INFO, "he_Y[%d] \n", he_Y[HOP_0].code);
     
     return n_bits;
     
@@ -541,13 +623,12 @@ static void con_rlc(int image_size, LheContext* s, LheHuffEntry* he_X, LheImage*
     counter_bin   = 0;
     count__ = 0;
     
-    av_log (NULL, AV_LOG_INFO, "\n");
 
     for (int i=0; i<image_size; i++)
     {    
-        av_log (NULL, AV_LOG_INFO, "i:%d s:%d;", i, lheX->hops[i]);
-        count__ = count__ + 1;
-        if((count__+1) % 100 == 0){av_log (NULL, AV_LOG_INFO, "\n");}
+        // av_log (NULL, AV_LOG_INFO, "%d;", lheX->hops[i]);
+        // count__ = count__ + 1;
+        // if((count__+1) % 100 == 0){av_log (NULL, AV_LOG_INFO, "\n");}
         //If HOP_0
         if ( ( lheX->hops[i] ) == HOP_0 )
         {
@@ -621,7 +702,7 @@ static void con_rlc(int image_size, LheContext* s, LheHuffEntry* he_X, LheImage*
                     put_bits(&s->pb,leng-1, code&mask);  // truncado 
                 }
                 else
-                {
+             {
                     put_bits(&s->pb, he_X[ lheX->hops[i] ].len, he_X[ lheX->hops[i] ].code);  // NO truncado 
                 }
             }           
@@ -631,15 +712,20 @@ static void con_rlc(int image_size, LheContext* s, LheHuffEntry* he_X, LheImage*
     }
 
 
-    // av_log (NULL, AV_LOG_INFO, "\n\n\n");
-    // av_log (NULL, AV_LOG_INFO, "counter_bin: %d;", counter_bin);
-    // av_log (NULL, AV_LOG_INFO, "\n\n\n");
 
+    // After main loop
     if (counter_bin != 0)
     {
         put_bits(&s->pb, BIT_NUMBER, counter_bin); 
 
     }
+    else
+    {
+        if (counter_hop_0 == MAX_HOPS)
+        {
+            put_bits(&s->pb, BIT_NUMBER, 0); 
+        }
+    }  
 
 }
 
@@ -687,7 +773,7 @@ static int lhe_basic_write_file(AVCodecContext *avctx, AVPacket *pkt,
 
     //Generates Huffman
     // n_bits_hops = lhe_basic_gen_huffman (he_Y, he_UV, (&s->lheY)->hops, (&s->lheU)->hops, (&s->lheV)->hops, image_size_Y, image_size_UV);      
-    /// RLC-MODE
+    //// RLC-MODE
     n_bits_hops = lhe_basic_gen_huffman_rlc (he_Y, he_UV, (&s->lheY)->hops, (&s->lheU)->hops, (&s->lheV)->hops, image_size_Y, image_size_UV);   
     
     n_bytes_components = n_bits_hops/8;          
@@ -773,6 +859,19 @@ static int lhe_basic_write_file(AVCodecContext *avctx, AVPacket *pkt,
     // sin_rlc(image_size_UV, s, he_UV, lheV);
 
     /// RLC-MODE
+
+    // av_log (NULL, AV_LOG_INFO, "\n\n\n he_Y[HOP_NEG_2]: code = %d length = %d", he_Y[HOP_NEG_2].code, he_UV[HOP_NEG_2].len);
+    // av_log (NULL, AV_LOG_INFO, "\n he_Y[HOP_NEG_1]: code = %d length = %d", he_Y[HOP_NEG_1].code, he_UV[HOP_NEG_1].len);
+    // av_log (NULL, AV_LOG_INFO, "\n he_Y[HOP_0]: code = %d length = %d", he_Y[HOP_0].code, he_UV[HOP_0].len);
+    // av_log (NULL, AV_LOG_INFO, "\n he_Y[HOP_POS_1]: code = %d length = %d", he_Y[HOP_POS_1].code, he_UV[HOP_POS_1].len);
+    // av_log (NULL, AV_LOG_INFO, "\n he_Y[HOP_POS_2]: code = %d length = %d", he_Y[HOP_POS_2].code, he_UV[HOP_POS_2].len);
+
+    // av_log (NULL, AV_LOG_INFO, "\n\n he_UV[HOP_NEG_2]: code = %d length = %d", he_UV[HOP_NEG_2].code, he_UV[HOP_NEG_2].len);
+    // av_log (NULL, AV_LOG_INFO, "\n he_UV[HOP_NEG_1]: code = %d length = %d", he_UV[HOP_NEG_1].code, he_UV[HOP_NEG_1].len);
+    // av_log (NULL, AV_LOG_INFO, "\n he_UV[HOP_0]: code = %d length = %d", he_UV[HOP_0].code, he_UV[HOP_0].len);
+    // av_log (NULL, AV_LOG_INFO, "\n he_UV[HOP_POS_1]: code = %d length = %d", he_UV[HOP_POS_1].code, he_UV[HOP_POS_1].len);
+    // av_log (NULL, AV_LOG_INFO, "\n he_UV[HOP_POS_2]: code = %d length = %d", he_UV[HOP_POS_2].code, he_UV[HOP_POS_2].len);
+
     con_rlc(image_size_Y, s, he_Y, lheY);
     con_rlc(image_size_UV, s, he_UV, lheU);
     con_rlc(image_size_UV, s, he_UV, lheV);
