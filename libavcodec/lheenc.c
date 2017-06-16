@@ -513,12 +513,10 @@ static uint64_t lhe_basic_gen_huffman (LheHuffEntry *he_Y, LheHuffEntry *he_UV,
  * 
  */
 static void sin_rlc(int image_size, LheContext* s, LheHuffEntry* he_X, LheImage* lheX) {
-    int i;
-    for (i=0; i<image_size; i++)
+    for (int i=0; i<image_size; i++)
     {
        put_bits(&s->pb, he_X[lheX->hops[i]].len , he_X[lheX->hops[i]].code);
     }
-    
 }
 
 
@@ -549,8 +547,7 @@ static void con_rlc(int image_size, LheContext* s, LheHuffEntry* he_X, LheImage*
     for (int i=0; i<image_size; i++)
     {    
         // av_log (NULL, AV_LOG_INFO, "%d c_h:%d c_b:%d;", lheX->hops[i], counter_hop_0, counter_bin);
-        av_log (NULL, AV_LOG_INFO, "%d;", lheX->hops[i]);
-
+        av_log (NULL, AV_LOG_INFO, "i:%d %d;", i, lheX->hops[i]);
         count__ = count__ + 1;
         if((count__+1) % 100 == 0){av_log (NULL, AV_LOG_INFO, "\n");}
         //If HOP_0
@@ -593,44 +590,44 @@ static void con_rlc(int image_size, LheContext* s, LheHuffEntry* he_X, LheImage*
                     put_bits(&s->pb, BIT_NUMBER, 0); 
                 }
             }       
-            uint32_t code =  he_X[ lheX->hops[i] ].code;
-            uint32_t leng =  he_X[ lheX->hops[i] ].len;
-            int mask = 0;
-            for (int ll=0; ll<leng; ll++)
-            {
-                    if(ll==0)
-                    {
-                        int val = he_X[HOP_0].code;
-                        for (int mm=0; mm<(leng-(ll+1)); mm++)
-                        {
-                             val = val*2;
-                        }
-                        mask += val;
-                    }
-                    else
-                    {
-                        int val = !(he_X[HOP_0].code);
-                        for (int mm=0; mm<(leng-(ll+1)); mm++)
-                        {
-                             val = val*2;
-                        }
-                        mask += val;
-                    }
-            } 
-            if (counter_bin != 0)
-            {
-                    put_bits(&s->pb,leng-1, code&mask);  // truncado 
-            }
-            else{
-                if (counter_hop_0 == MAX_HOPS)
-                {
-                    put_bits(&s->pb,leng-1, code&mask);  // truncado 
-                }
-                else
-             {
+            // uint32_t code =  he_X[ lheX->hops[i] ].code;
+            // uint32_t leng =  he_X[ lheX->hops[i] ].len;
+            // int mask = 0;
+            // for (int ll=0; ll<leng; ll++)
+            // {
+            //         if(ll==0)
+            //         {
+            //             int val = he_X[HOP_0].code;
+            //             for (int mm=0; mm<(leng-(ll+1)); mm++)
+            //             {
+            //                  val = val*2;
+            //             }
+            //             mask += val;
+            //         }
+            //         else
+            //         {
+            //             int val = !(he_X[HOP_0].code);
+            //             for (int mm=0; mm<(leng-(ll+1)); mm++)
+            //             {
+            //                  val = val*2;
+            //             }
+            //             mask += val;
+            //         }
+            // } 
+            // if (counter_bin != 0)
+            // {
+            //         put_bits(&s->pb,leng-1, code&mask);  // truncado 
+            // }
+            // else{
+            //     if (counter_hop_0 == MAX_HOPS)
+            //     {
+            //         put_bits(&s->pb,leng-1, code&mask);  // truncado 
+            //     }
+            //     else
+            //  {
                     put_bits(&s->pb, he_X[ lheX->hops[i] ].len, he_X[ lheX->hops[i] ].code);  // NO truncado 
-                }
-            }           
+            //     }
+            // }           
             counter_hop_0 = 0;
             counter_bin = 0;
         }
