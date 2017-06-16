@@ -542,12 +542,12 @@ static void con_rlc(int image_size, LheContext* s, LheHuffEntry* he_X, LheImage*
     //     av_log (NULL, AV_LOG_INFO, "he_X[%d] = %d len %d ------ \n", i, he_X[i].code, he_X[i].len);
     // }
     
-    av_log (NULL, AV_LOG_INFO, "\n\n\n AQUI \n\n\n");
+    // av_log (NULL, AV_LOG_INFO, "\n\n\n AQUI \n\n\n");
 
     for (int i=0; i<image_size; i++)
     {    
         // av_log (NULL, AV_LOG_INFO, "%d c_h:%d c_b:%d;", lheX->hops[i], counter_hop_0, counter_bin);
-        av_log (NULL, AV_LOG_INFO, "i:%d %d;", i, lheX->hops[i]);
+        // av_log (NULL, AV_LOG_INFO, "i:%d %d;", i, lheX->hops[i]);
         count__ = count__ + 1;
         if((count__+1) % 100 == 0){av_log (NULL, AV_LOG_INFO, "\n");}
         //If HOP_0
@@ -575,6 +575,7 @@ static void con_rlc(int image_size, LheContext* s, LheHuffEntry* he_X, LheImage*
         // If not HOP_0
         else
         {
+
             // If previous HOP_0
             if (counter_bin != 0)
             {
@@ -590,44 +591,45 @@ static void con_rlc(int image_size, LheContext* s, LheHuffEntry* he_X, LheImage*
                     put_bits(&s->pb, BIT_NUMBER, 0); 
                 }
             }       
-            // uint32_t code =  he_X[ lheX->hops[i] ].code;
-            // uint32_t leng =  he_X[ lheX->hops[i] ].len;
-            // int mask = 0;
-            // for (int ll=0; ll<leng; ll++)
-            // {
-            //         if(ll==0)
-            //         {
-            //             int val = he_X[HOP_0].code;
-            //             for (int mm=0; mm<(leng-(ll+1)); mm++)
-            //             {
-            //                  val = val*2;
-            //             }
-            //             mask += val;
-            //         }
-            //         else
-            //         {
-            //             int val = !(he_X[HOP_0].code);
-            //             for (int mm=0; mm<(leng-(ll+1)); mm++)
-            //             {
-            //                  val = val*2;
-            //             }
-            //             mask += val;
-            //         }
-            // } 
-            // if (counter_bin != 0)
-            // {
-            //         put_bits(&s->pb,leng-1, code&mask);  // truncado 
-            // }
-            // else{
-            //     if (counter_hop_0 == MAX_HOPS)
-            //     {
-            //         put_bits(&s->pb,leng-1, code&mask);  // truncado 
-            //     }
-            //     else
-            //  {
+            uint32_t code =  he_X[ lheX->hops[i] ].code;
+            uint32_t leng =  he_X[ lheX->hops[i] ].len;
+            int mask = get_mask(leng,he_X);
+            if (counter_bin != 0)
+            {
+                    // av_log (NULL, AV_LOG_INFO, "mask:%d code:%d code+mask:%d;",mask,code,code&mask);    
+                    // If HOP_0-00 and HOP_POS_1-01 
+                    if( (he_X[HOP_0].len != 1) )
+                    {
+                        put_bits(&s->pb, leng, code);
+                    }
+                    // Lo normal
+                    else
+                    {
+                        put_bits(&s->pb,leng-1, code&mask);  // truncado 
+                    }    
+            }
+            else{
+                if (counter_hop_0 == MAX_HOPS)
+                {
+                    // av_log (NULL, AV_LOG_INFO, "mask:%d code:%d code+mask:%d;",mask,code,code&mask);    
+                    // If HOP_0-00 and HOP_POS_1-01 
+                    if( (he_X[HOP_0].len != 1) )
+                    {
+                        put_bits(&s->pb, leng, code);
+                    }
+                    // Lo normal
+                    else
+                    {
+                        put_bits(&s->pb,leng-1, code&mask);  // truncado 
+                    }
+                }
+                else
+                {
                     put_bits(&s->pb, he_X[ lheX->hops[i] ].len, he_X[ lheX->hops[i] ].code);  // NO truncado 
-            //     }
-            // }           
+                    // // probar
+                    // put_bits(&s->pb,leng, code);
+                }
+            }           
             counter_hop_0 = 0;
             counter_bin = 0;
         }

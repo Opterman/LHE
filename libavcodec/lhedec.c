@@ -280,20 +280,20 @@ static void lhe_basic_read_file_symbols_rlc (LheState *s, LheHuffEntry *he, uint
     uint32_t huffman_symbol,aux_huffman_symbol;
     int decoded_symbols;
     unsigned int counter_hop_0, mask;
-    int contador;
+    // int contador;
     int modo;
     int total;
 
     symbol = NO_SYMBOL;
     decoded_symbols = 0;
-    contador = 0;
+    // contador = 0;
     huffman_symbol = 0;
     count_bits = 0;
     counter_hop_0 = 0;
     modo = 0;
     total = 0;
 
-    av_log (NULL, AV_LOG_INFO, "\n\n\n AQUI \n\n\n");
+    // av_log (NULL, AV_LOG_INFO, "\n\n\n AQUI \n\n\n");
 
     while (decoded_symbols<image_size)
     {   
@@ -320,11 +320,11 @@ static void lhe_basic_read_file_symbols_rlc (LheState *s, LheHuffEntry *he, uint
                 {
                     count_bits = 0;
                     symbols[decoded_symbols] = HOP_0;
-                    contador = contador + 1;
-                    av_log (NULL, AV_LOG_INFO, "i:%d %d;", decoded_symbols, symbol);
+                    // contador = contador + 1;
+                    // av_log (NULL, AV_LOG_INFO, "i:%d %d;", decoded_symbols, symbol);
                     decoded_symbols = decoded_symbols+1;
                     // av_log (NULL, AV_LOG_INFO, "d:%d c:%d s:%d;", decoded_symbols, contador, symbol);
-                    if((contador+1)%100 == 0){  av_log(NULL, AV_LOG_INFO, "\n");    }
+                    // if((contador+1)%100 == 0){  av_log(NULL, AV_LOG_INFO, "\n");    }
                     // if(decoded_symbols == image_size){break;} 
                     modo = 1;
                 }
@@ -334,11 +334,11 @@ static void lhe_basic_read_file_symbols_rlc (LheState *s, LheHuffEntry *he, uint
                     if (symbol != NO_SYMBOL)
                     {      
                         symbols[decoded_symbols] = symbol;
-                        contador = contador + 1;
-                        av_log (NULL, AV_LOG_INFO, "i:%d %d;", decoded_symbols, symbol);
+                        // contador = contador + 1;
+                        // av_log (NULL, AV_LOG_INFO, "i:%d %d;", decoded_symbols, symbol);
                         decoded_symbols = decoded_symbols+1;
                         // av_log (NULL, AV_LOG_INFO, "d:%d c:%d s:%d;", decoded_symbols, contador, symbol);
-                        if((contador+1)%100 == 0){  av_log(NULL, AV_LOG_INFO, "\n");    }
+                        // if((contador+1)%100 == 0){  av_log(NULL, AV_LOG_INFO, "\n");    }
                         huffman_symbol = 0;
                         count_bits = 0;
                     }   
@@ -350,11 +350,11 @@ static void lhe_basic_read_file_symbols_rlc (LheState *s, LheHuffEntry *he, uint
                 if (symbol != NO_SYMBOL)
                 {      
                     symbols[decoded_symbols] = symbol;
-                    contador = contador + 1;
-                    av_log (NULL, AV_LOG_INFO, "i:%d %d;", decoded_symbols, symbol);
+                    // contador = contador + 1;
+                    // av_log (NULL, AV_LOG_INFO, "i:%d %d;", decoded_symbols, symbol);
                     decoded_symbols = decoded_symbols+1;
                     // av_log (NULL, AV_LOG_INFO, "d:%d c:%d s:%d;", decoded_symbols, contador, symbol);
-                    if((contador+1)%100 == 0){  av_log(NULL, AV_LOG_INFO, "\n");    }
+                    // if((contador+1)%100 == 0){  av_log(NULL, AV_LOG_INFO, "\n");    }
                     huffman_symbol = 0;
                     count_bits = 0;
                     counter_hop_0 = 0; 
@@ -377,7 +377,21 @@ static void lhe_basic_read_file_symbols_rlc (LheState *s, LheHuffEntry *he, uint
 
             if (number != MAX_NUMBER)
             {
-                modo = 2;
+                // modo = 2;
+                // av_log (NULL, AV_LOG_INFO, "t_2:%d", total);
+                for (int i=0; i< total; i++) 
+                {    
+                    symbols[decoded_symbols] = HOP_0;
+                    // contador = contador + 1;
+                    // av_log (NULL, AV_LOG_INFO, "i:%d %d;", decoded_symbols, symbol);
+                    decoded_symbols = decoded_symbols+1;
+                    // av_log (NULL, AV_LOG_INFO, "d:%d c:%d s:%d;", decoded_symbols, contador, symbol);
+                    // if((contador+1)%100 == 0){  av_log(NULL, AV_LOG_INFO, "\n");    }
+                }
+                total = 0;     
+                modo = 3; // Para usar truncado
+                // modo = 0;  // Sin truncado
+
             }
 
             // av_log (NULL, AV_LOG_INFO, "t:%d n:%d", total, number);
@@ -385,59 +399,77 @@ static void lhe_basic_read_file_symbols_rlc (LheState *s, LheHuffEntry *he, uint
         }
 
 
-        // Modo 2: El total de 4s -> Modo 3
-        else if(modo == 2){
+        // // Modo 2: El total de 4s -> Modo 3
+        // else if(modo == 2){
             
-            // av_log (NULL, AV_LOG_INFO, "t_2:%d", total);
+        //     // av_log (NULL, AV_LOG_INFO, "t_2:%d", total);
 
-            for (int i=0; i< total; i++) 
-            {    
-                symbols[decoded_symbols] = HOP_0;
-                contador = contador + 1;
-                av_log (NULL, AV_LOG_INFO, "i:%d %d;", decoded_symbols, symbol);
-                decoded_symbols = decoded_symbols+1;
-                // av_log (NULL, AV_LOG_INFO, "d:%d c:%d s:%d;", decoded_symbols, contador, symbol);
-                if((contador+1)%100 == 0){  av_log(NULL, AV_LOG_INFO, "\n");    }
-            }
+        //     for (int i=0; i< total; i++) 
+        //     {    
+        //         symbols[decoded_symbols] = HOP_0;
+        //         // contador = contador + 1;
+        //         // av_log (NULL, AV_LOG_INFO, "i:%d %d;", decoded_symbols, symbol);
+        //         decoded_symbols = decoded_symbols+1;
+        //         // av_log (NULL, AV_LOG_INFO, "d:%d c:%d s:%d;", decoded_symbols, contador, symbol);
+        //         // if((contador+1)%100 == 0){  av_log(NULL, AV_LOG_INFO, "\n");    }
+        //     }
         
-            total = 0;     
-            // modo = 3; // Para usar truncado
-            modo = 0;  // Sin truncado
+        //     total = 0;     
+        //     modo = 3; // Para usar truncado
+        //     // modo = 0;  // Sin truncado
         
-        }
+        // }
  
 
         // Modo 3: Lo de la mascara -> Modo 1
         else if(modo == 3){
             
-            mask = 2;
-            count_bits = 0;
-            while(mask != 0)
-            {
-                huffman_symbol = ( (huffman_symbol<<1) | get_bits(&s->gb, 1) );
-                aux_huffman_symbol = huffman_symbol | mask;
-                count_bits++;
-                symbol = lhe_translate_huffman_into_symbol(aux_huffman_symbol, he, (count_bits+1) );
-                if (symbol != NO_SYMBOL)
-                {      
-                    symbols[decoded_symbols] = symbol;
-                    contador = contador + 1;                 
-                    av_log (NULL, AV_LOG_INFO, "i:%d %d;", decoded_symbols, symbol);
-                    decoded_symbols = decoded_symbols+1;
-                    // av_log (NULL, AV_LOG_INFO, "d:%d c:%d s:%d;", decoded_symbols, contador, symbol);
-                    if((contador+1)%100 == 0){  av_log(NULL, AV_LOG_INFO, "\n");    }
-                    huffman_symbol = 0;
-                    aux_huffman_symbol = 0;
-                    count_bits = 0;
-                    mask = 0;
-                    symbol=0;
-                }  
-                else
-                {
-                    mask = mask*2; 
-                }
+            // av_log (NULL, AV_LOG_INFO, "\n MODO 3");
+
+            if( (he[HOP_0].len != 1)){
                 
+                // av_log (NULL, AV_LOG_INFO, "\n MODO 0");
+
+                modo = 0;
             }
+
+            else{
+
+                mask = 2;
+                count_bits = 0;
+                while(mask != 0)
+                {
+                    uint32_t valor_get_bits = get_bits(&s->gb, 1);
+                    huffman_symbol = ( (huffman_symbol<<1) | valor_get_bits );
+                    aux_huffman_symbol = huffman_symbol | mask;
+                    count_bits++;
+                    symbol = lhe_translate_huffman_into_symbol(aux_huffman_symbol, he, (count_bits+1) );
+                    
+                    // av_log (NULL, AV_LOG_INFO, "mask:%d huffman_symbol:%d aux_huffman_symbol:%d symbol:%d v_g_b:%d;",mask,huffman_symbol,aux_huffman_symbol,symbol,valor_get_bits);
+
+                    if (symbol != NO_SYMBOL)
+                    {      
+                        symbols[decoded_symbols] = symbol;
+                        // contador = contador + 1;                 
+                        // av_log (NULL, AV_LOG_INFO, "i:%d %d;", decoded_symbols, symbol);
+                        decoded_symbols = decoded_symbols+1;
+                        // av_log (NULL, AV_LOG_INFO, "d:%d c:%d s:%d;", decoded_symbols, contador, symbol);
+                        // if((contador+1)%100 == 0){  av_log(NULL, AV_LOG_INFO, "\n");    }
+                        huffman_symbol = 0;
+                        aux_huffman_symbol = 0;
+                        count_bits = 0;
+                        mask = 0;
+                        symbol=0;
+                    }  
+                    else
+                    {
+                        mask = mask*2; 
+                    }
+                    
+                }
+
+            }
+            
             
             counter_hop_0 = 0;
             modo = 0;
