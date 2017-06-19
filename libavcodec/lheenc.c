@@ -281,7 +281,7 @@ static int get_bits_for_rlc(int image_size, LheHuffEntry* he_X, uint8_t* symbols
                 counter_bin = counter_bin + 1;
                 if (counter_bin == MAX_NUMBER)
                 {
-                    n_bits_dim += BIT_NUMBER;
+                    n_bits_dim += 1;
                     counter_bin = 0;
                     counter_hop_0 = MAX_HOPS;
                 }
@@ -293,7 +293,7 @@ static int get_bits_for_rlc(int image_size, LheHuffEntry* he_X, uint8_t* symbols
             // If previous HOP_0
             if (counter_bin != 0)
             {
-                n_bits_dim += BIT_NUMBER;
+                n_bits_dim += (BIT_NUMBER+1);
 
             }
             // If not previous HOP_0
@@ -302,7 +302,7 @@ static int get_bits_for_rlc(int image_size, LheHuffEntry* he_X, uint8_t* symbols
             // If max_hops HOP_0 before, we send 0
                 if (counter_hop_0 == MAX_HOPS)
                 {
-                    n_bits_dim += BIT_NUMBER; 
+                    n_bits_dim += (BIT_NUMBER+1); 
                 }
             }       
             uint32_t code =  he_X[ symbols_X[i] ].code;
@@ -347,14 +347,13 @@ static int get_bits_for_rlc(int image_size, LheHuffEntry* he_X, uint8_t* symbols
     // After main loop
     if (counter_bin != 0)
     {
-        n_bits_dim += BIT_NUMBER; 
-
+        n_bits_dim += (BIT_NUMBER+1); 
     }
     else
     {
         if (counter_hop_0 == MAX_HOPS)
         {
-            n_bits_dim += BIT_NUMBER; 
+            n_bits_dim += (BIT_NUMBER+1); 
         }
     }  
     return n_bits_dim;
@@ -444,7 +443,7 @@ static uint64_t lhe_basic_gen_huffman_rlc (LheHuffEntry *he_Y, LheHuffEntry *he_
 
     bpp = 1.0*n_bits/(image_size_Y+image_size_UV+image_size_UV);
     
-    // av_log (NULL, AV_LOG_INFO, "\n\n\n 2 YUV bpp: %f n_bits: %d \n\n\n", bpp, n_bits );
+    av_log (NULL, AV_LOG_INFO, "\n\n\n 2 YUV bpp: %f n_bits: %d \n\n\n", bpp, n_bits );
 
     return n_bits;
 
@@ -594,7 +593,9 @@ static void con_rlc(int image_size, LheContext* s, LheHuffEntry* he_X, LheImage*
                 counter_bin = counter_bin + 1;
                 if (counter_bin == MAX_NUMBER)
                 {
-                    put_bits(&s->pb, BIT_NUMBER, MAX_NUMBER);
+                    // put_bits(&s->pb, BIT_NUMBER, MAX_NUMBER);
+                    // Minimejora
+                    put_bits(&s->pb, 1, 1);
                     // av_log (NULL, AV_LOG_INFO, "Mando 1s");
                     counter_bin = 0;
                     counter_hop_0 = MAX_HOPS;
@@ -608,7 +609,9 @@ static void con_rlc(int image_size, LheContext* s, LheHuffEntry* he_X, LheImage*
             // If previous HOP_0
             if (counter_bin != 0)
             {
-                put_bits(&s->pb, BIT_NUMBER, counter_bin); 
+                // Minimejora
+                // put_bits(&s->pb, BIT_NUMBER, counter_bin); 
+                put_bits(&s->pb, (BIT_NUMBER+1), counter_bin); 
 
             }
             // If not previous HOP_0
@@ -617,7 +620,8 @@ static void con_rlc(int image_size, LheContext* s, LheHuffEntry* he_X, LheImage*
             // If max_hops HOP_0 before, we send 0
                 if (counter_hop_0 == MAX_HOPS)
                 {
-                    put_bits(&s->pb, BIT_NUMBER, 0); 
+                    // Minimejora
+                    put_bits(&s->pb, (BIT_NUMBER+1), 0); 
                 }
             }       
             uint32_t code =  he_X[ lheX->hops[i] ].code;
@@ -665,18 +669,18 @@ static void con_rlc(int image_size, LheContext* s, LheHuffEntry* he_X, LheImage*
     }
 
 
-
+    // Minimejora
     // After main loop
     if (counter_bin != 0)
     {
-        put_bits(&s->pb, BIT_NUMBER, counter_bin); 
+        put_bits(&s->pb, (BIT_NUMBER+1), counter_bin); 
 
     }
     else
     {
         if (counter_hop_0 == MAX_HOPS)
         {
-            put_bits(&s->pb, BIT_NUMBER, 0); 
+            put_bits(&s->pb, (BIT_NUMBER+1), 0); 
         }
     }  
 

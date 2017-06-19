@@ -359,10 +359,14 @@ static void lhe_basic_read_file_symbols_rlc (LheState *s, LheHuffEntry *he, uint
         // Modo 1: de 3 en 3 bits hasta que no sea 7 -> Modo 2
         else if(modo == 1){
             huffman_symbol = 0;
-            int number = get_bits(&s->gb, BIT_NUMBER);
-            total = total + number;
-            if (number != MAX_NUMBER)
-            {
+            
+            //Minimejora
+            int number = get_bits(&s->gb, 1);
+            if (number == 1){
+                total = total + 7;
+            }
+            if (number == 0){
+                total = total + get_bits(&s->gb, BIT_NUMBER);
                 for (int i=0; i< total; i++) 
                 {    
                     symbols[decoded_symbols] = HOP_0;
@@ -377,6 +381,25 @@ static void lhe_basic_read_file_symbols_rlc (LheState *s, LheHuffEntry *he, uint
                 // modo = 0;  // Sin truncado
                 mask = 2;
             }
+
+            // int number = get_bits(&s->gb, BIT_NUMBER);
+            // total = total + number;
+            // if (number != MAX_NUMBER)
+            // {
+            //     for (int i=0; i< total; i++) 
+            //     {    
+            //         symbols[decoded_symbols] = HOP_0;
+            //         contador = contador + 1;
+            //         // av_log (NULL, AV_LOG_INFO, "i:%d %d;", decoded_symbols, symbol);
+            //         decoded_symbols = decoded_symbols+1;
+            //         // av_log (NULL, AV_LOG_INFO, "d:%d c:%d s:%d;", decoded_symbols, contador, symbol);
+            //         // if((contador+1)%100 == 0){  av_log(NULL, AV_LOG_INFO, "\n");    }
+            //     }
+            //     total = 0;     
+            //     modo = 2; // Para usar truncado
+            //     // modo = 0;  // Sin truncado
+            //     mask = 2;
+            // }
 
         }
 
