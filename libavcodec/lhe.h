@@ -149,10 +149,8 @@ static const uint8_t mlhe_sig[4] = "MLHE";
 #define GOP 30
 
 //RLC parameters
-
 #define MAX_HOPS 4
 #define BIT_NUMBER 3
-#define MAX_NUMBER 7
 
 typedef struct LheBasicPrec {
     uint8_t prec_luminance[Y_MAX_COMPONENT][RATIO][H1_RANGE][NUMBER_OF_HOPS]; // precomputed luminance component
