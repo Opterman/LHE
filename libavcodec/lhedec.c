@@ -316,10 +316,14 @@ static void lhe_basic_read_file_symbols_rlc (LheState *s, LheHuffEntry *he, uint
         else if(mode == 1)
         {
             huffman_symbol = 0;
-            unsigned int number = get_bits(&s->gb, BIT_NUMBER);
-            total = total + number;
-            if (number != (pow(2, BIT_NUMBER) - 1) )
+            unsigned int number = get_bits(&s->gb, 1);
+            if(number == 1)
             {
+                total = total + (pow(2, BIT_NUMBER) - 1);
+            }
+            if(number == 0)
+            {
+                total = total + get_bits(&s->gb, BIT_NUMBER);
                 for (int i=0; i< total; i++) 
                 {    
                     symbols[decoded_symbols] = HOP_0;
@@ -330,6 +334,21 @@ static void lhe_basic_read_file_symbols_rlc (LheState *s, LheHuffEntry *he, uint
                 // modo = 0;  // Sin truncado
                 mask = 2;
             }
+
+            // unsigned int number = get_bits(&s->gb, BIT_NUMBER);
+            // total = total + number;
+            // if (number != (pow(2, BIT_NUMBER) - 1) )
+            // {
+            //     for (int i=0; i< total; i++) 
+            //     {    
+            //         symbols[decoded_symbols] = HOP_0;
+            //         decoded_symbols++;
+            //     }
+            //     total = 0;     
+            //     mode = 2; // Para usar truncado
+            //     // modo = 0;  // Sin truncado
+            //     mask = 2;
+            // }
 
         }
 

@@ -284,7 +284,7 @@ static int get_bits_for_rlc(int image_size, LheHuffEntry* he_X, uint8_t* symbols
                 counter_bin = counter_bin + 1;
                 if (counter_bin == (pow(2, BIT_NUMBER)-1) )
                 {
-                    n_bits_dim += BIT_NUMBER;
+                    n_bits_dim += 1;
                     counter_bin = 0;
                     counter_hop_0 = MAX_HOPS;
                 }
@@ -294,18 +294,19 @@ static int get_bits_for_rlc(int image_size, LheHuffEntry* he_X, uint8_t* symbols
         {
             if (counter_bin != 0)
             {
-                n_bits_dim += BIT_NUMBER;
+                n_bits_dim += (BIT_NUMBER+1);
 
             }
             else
             {
                 if (counter_hop_0 == MAX_HOPS)
                 {
-                    n_bits_dim += BIT_NUMBER; 
+                    n_bits_dim += (BIT_NUMBER+1); 
                 }
             }       
             
             int mask = get_mask(length,he_X);
+
             if (counter_bin != 0)
             {
                     if( (he_X[HOP_0].len != 1) )
@@ -317,6 +318,7 @@ static int get_bits_for_rlc(int image_size, LheHuffEntry* he_X, uint8_t* symbols
                         n_bits_dim += (length-1);
                     }    
             }
+
             else{
                 if (counter_hop_0 == MAX_HOPS)
                 {
@@ -334,20 +336,22 @@ static int get_bits_for_rlc(int image_size, LheHuffEntry* he_X, uint8_t* symbols
                     n_bits_dim += length; 
                 }
             }           
+            
             counter_hop_0 = 0;
             counter_bin = 0;
+        
         }
+    
     }
     if (counter_bin != 0)
     {
-        n_bits_dim += BIT_NUMBER; 
-
+        n_bits_dim += (BIT_NUMBER+1); 
     }
     else
     {
         if (counter_hop_0 == MAX_HOPS)
         {
-            n_bits_dim += BIT_NUMBER; 
+            n_bits_dim += (BIT_NUMBER+1); 
         }
     }  
     return n_bits_dim;
@@ -570,38 +574,48 @@ static void con_rlc(int image_size, LheContext* s, LheHuffEntry* he_X, LheImage*
 
         if ( hop == HOP_0 )
         {
+       
             counter_hop_0++;
+       
             if ( counter_hop_0 <= MAX_HOPS) 
             {
                 put_bits(&s->pb,length,code);
             }
+       
             else
             {
                 counter_bin++;
                 if (counter_bin == (pow(2, BIT_NUMBER) - 1))
                 {
-                    put_bits(&s->pb, BIT_NUMBER, (pow(2, BIT_NUMBER) - 1));
+       
+                    put_bits(&s->pb,1,1); //mini-mejora
                     counter_bin = 0;
                     counter_hop_0 = MAX_HOPS;
                     counter_max_hops_sent++;
+       
                 }
+       
             }
+       
         }
         else
         {
+
             if (counter_bin != 0)
             {
-                put_bits(&s->pb,BIT_NUMBER,counter_bin); 
+                put_bits(&s->pb,(BIT_NUMBER+1),counter_bin); //mini-mejora
 
             }
             else
             {
                 if (counter_hop_0 == MAX_HOPS)
                 {
-                    put_bits(&s->pb,BIT_NUMBER,0); 
+                    put_bits(&s->pb,(BIT_NUMBER+1),0); //mini-mejora
                 }
-            }       
+            }
+
             int mask = get_mask(length, he_X);
+            
             if (counter_bin != 0)
             {
                     if( (length_hop_0 != 1) )
@@ -613,6 +627,7 @@ static void con_rlc(int image_size, LheContext* s, LheHuffEntry* he_X, LheImage*
                         put_bits(&s->pb,length-1,code&mask);  // truncado 
                     }    
             }
+            
             else{
                 if (counter_hop_0 == MAX_HOPS)
                 {
@@ -630,21 +645,23 @@ static void con_rlc(int image_size, LheContext* s, LheHuffEntry* he_X, LheImage*
                     put_bits(&s->pb,length,code);
                 }
             }
+            
             counter_max_hops_sent = 0;           
             counter_hop_0 = 0;
             counter_bin = 0;
+        
         }
     }
 
     if (counter_bin != 0)
     {
-        put_bits(&s->pb,BIT_NUMBER,counter_bin); 
+        put_bits(&s->pb,(BIT_NUMBER+1),counter_bin); //mini-mejora
     }
     else
     {
         if ( ( counter_hop_0 == MAX_HOPS ) && ( counter_max_hops_sent != 0 ) )
         {
-            put_bits(&s->pb,BIT_NUMBER,0); 
+            put_bits(&s->pb,(BIT_NUMBER+1),0); //mini-mejora
         }
     }  
 }
